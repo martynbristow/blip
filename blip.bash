@@ -14,6 +14,7 @@ set -euxo pipefail
 #   https://bash.cyberciti.biz/guide/Shell_functions_library
 #   http://www.bashinator.org/
 #   https://dberkholz.com/2011/04/07/bash-shell-scripting-libraries/
+#   https://github.com/Dieterbe/libui-sh/blob/master/libui.sh
 
 # Get a nice list of bash built-ins without forking crap for formatting:
 #     while read -r _ cmd ; do echo $cmd ; done < <(enable -a)
