@@ -29,6 +29,63 @@ set -euxo pipefail
 #           Newline characters should be omitted from output when only
 #           a single line of output is ever expected.
 
+url_http_header () {
+    curl -I "$1"
+}
+
+url_http_response_code () {
+    url_http_header "$1" | grep ^HTTP
+}
+
+url_exists () {
+    local url="$1"
+    if [[ "$url" =~ ^file:// ]] ; then
+        curl -I "$url" -o /dev/null 2>/dev/null
+    else
+        url_http_response_code "$url" | egrep -qw '^HTTP[^ ]* 2[0-9][0-9]'
+    fi
+}
+
+is_in_path () {
+    local cmd
+    for cmd in "$@" ; do
+        if ! type -P "$cmd" >/dev/null 2>&1 ; then
+             return 1
+        fi
+    done
+    return 0
+}
+
+is_ipv4_address () {
+    local regex='(?<![0-9])(?:(?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]))(?![0-9])'
+    grep -Pq "^$regex$" <<< "${1:-}"
+}
+
+is_ipv4_prefix () {
+    local ip="${1%%/*}"
+    local prefix="${1##*/}"
+    if is_ipv4_address "$ip" && is_integer "$prefix" &&
+        [[ $prefix -ge 0 ]] && [[ $prefix -le 32 ]] ; then
+        return 0
+    fi
+    return 1
+}
+
+is_ipv6_address () {
+    local regex='((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?'
+    grep -Pq "^$regex$" <<< "${1:-}"
+}
+
+is_ipv6_prefix () {
+    local ip="${1%%/*}"
+    local prefix="${1##*/}"
+    if is_ipv6_address "$ip" && is_integer "$prefix" &&
+        [[ $prefix -ge 0 ]] && [[ $prefix -le 128 ]] ; then
+        return 0
+    fi
+    return 1
+}
+
 # Evaulates if single argument input is an integer.
 is_int () { [[ "${1:-}" =~ ^-?[0-9]+$ ]]; }
 is_integer () { is_int "$@"; }
