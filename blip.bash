@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -euxo pipefail
-
 # blip - Bash Library for Indolent Programmers
 
 # Author: Nicola Worthington <nicolaw@tfb.net>
@@ -85,6 +83,52 @@ is_ipv6_prefix () {
     fi
     return 1
 }
+
+get_free_disk_space () {
+    while read -r _ blocks _ ; do
+        if is_integer "$blocks" ; then
+            echo "$(( blocks * 1000 ))"
+        fi
+    done < <(df -kP "$1")
+}
+
+get_username () {
+    local user="${USER:-$LOGNAME}"
+    user="${user:-$(id -un)}"
+    echo "${user:-$(whoami)}"
+}
+
+get_gecos_name () {
+    get_gecos_info "name" "$@"
+}
+
+# https://en.wikipedia.org/wiki/Gecos_field
+get_gecos_info () {
+    local key="${1:-}"
+    local user="${2:-$(get_username)}"
+    while IFS=: read username passwd uid gid gecos home shell ; do
+        if [[ "$user" = "$username" ]] ; then
+            if [[ -n "$key" ]] && [[ "$gecos" =~ ([,;]) ]] ; then
+                IFS="${BASH_REMATCH[1]}" read name addr office home email <<< "$gecos"
+                case "$key" in
+                    *name) echo "$name" ;;
+                    building|room|addr*) echo "$addr" ;;
+                    office*) echo "$office" ;;
+                    home*) echo "$home" ;;
+                    *) echo "$email" ;;
+                esac
+            elif [[ -z "$key" ]] || [[ "$key" = "name" ]] ; then
+                echo "$gecos"
+            fi
+            break
+        fi
+    done < <(getent passwd "$user")
+}
+
+# English language boolean true or false.
+is_true () { [[ "${1:-}" =~ ^yes|on|enabled?|true|1$ ]]; }
+is_false () { [[ "${1:-}" =~ ^no|off|disabled?|false|0$ ]]; }
+is_boolean () { is_true "$1" || is_false "$1"; }
 
 # Evaulates if single argument input is an integer.
 is_int () { [[ "${1:-}" =~ ^-?[0-9]+$ ]]; }
