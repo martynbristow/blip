@@ -27,6 +27,25 @@
 #           Newline characters should be omitted from output when only
 #           a single line of output is ever expected.
 
+# https://en.wikipedia.org/wiki/ISO_8601
+get_iso8601_date () { get_date "%Y-%m-%d" "$@"; }
+
+# Return the time since the epoch in seconds.
+get_unixtime () { get_date "%s" "$@"; }
+
+get_date () {
+    local format="${1:-%a %b %d %H:%M:%S %Z %Y}"
+    local when="${2:--1}"
+    if [[ ${BASH_VERSINFO[0]} -ge 4 && ${BASH_VERSINFO[1]} -ge 2 ]] ; then
+        printf "%($format)T\n" $when
+    else
+        if [[ "$when" = "-1" ]] ; then
+            when=""
+        fi
+        date ${when:+-d "$when"} +%s
+    fi
+}
+
 url_http_header () {
     curl -I "$1"
 }
@@ -197,15 +216,6 @@ get_fs_mounts () {
             echo -e "${target}"
         fi
     done < /proc/mounts
-}
-
-# Return the time since the epoch in seconds.
-get_unixtime () {
-    if [[ ${BASH_VERSINFO[0]} -ge 4 && ${BASH_VERSINFO[1]} -ge 2 ]] ; then
-        printf '%(%s)T\n' -1
-    else
-        date +%s
-    fi
 }
 
 # %w %W  time of file birth; - or 0 if unknown (creation)
