@@ -29,10 +29,10 @@ main () {
     mkdir -p "$build_dir"
     rsync -av --files-from="$base/MANIFEST" "$base" "$build_dir"
     tar -C "$base" -zcvf "$base/blip-${version}.tar.gz" "$(basename "$build_dir")"
-    cp "$base/blip-${version}.tar.gz" "$base/blip_${version}.orig.tar.gz"
 
     # Build Deb package.
     if is_in_path "debuild" "dpkg-deb" ; then
+        ln -s "$base/blip-${version}.tar.gz" "$base/blip_${version}.orig.tar.gz"
         pushd "$build_dir"
         debuild -us -uc
         popd
