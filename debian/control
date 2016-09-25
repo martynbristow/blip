@@ -1,0 +1,11 @@
+Source: blip
+Maintainer: Nicola Worthington <nicolaw@tfb.net>
+Section: devel
+Priority: optional
+Standards-Version: 3.9.2
+Build-Depends: debhelper (>= 9)
+
+Package: blip
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Bash Library for Indolent Programmers

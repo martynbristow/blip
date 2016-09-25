@@ -1,0 +1,13 @@
+blip.bash
+blip.1
+MANIFEST
+LICENSE
+README.md
+Makefile
+debian/blip.dirs
+debian/control
+debian/compat
+debian/changelog
+debian/copyright
+debian/source/format
+debian/rules
