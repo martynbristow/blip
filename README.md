@@ -24,6 +24,7 @@ source /usr/lib/blip.bash
 * Setup automatic build of release tarballs upon GitHub repository commits (assuming a Travis pass of unit tests).
 * Create SPEC file for RPM creation, and automatic release RPM creation.
 * Polish the Debian package creation, and automatic release DEB creation.
+* Sign all the resulting release packages.
 
 ## See Also
 
