@@ -27,6 +27,18 @@
 #           Newline characters should be omitted from output when only
 #           a single line of output is ever expected.
 
+# Try and bail out early if we detect that we are probably not running
+# from inside a bash shell interpreter. You may disable the exit on
+# non-Bash shell functionality by setting BLIP_ALLOW_FOREIGN_SHELLS=1.
+if [ "x$BASH" = "x" ] || [ "x$BASH_VERSION" = "x" ] || [ "x$BASHPID" = "x" ] ; then
+    case "x$BLIP_ALLOW_FOREIGN_SHELLS" in
+        x1|xyes|xtrue|xon|xenable|xenabled) true ;;
+        *)
+            echo "blip.bash detected a foreign shell interpreter is running; exiting!" >&2
+            exit 2
+    esac
+fi
+
 # https://en.wikipedia.org/wiki/ISO_8601
 get_iso8601_date () { get_date "%Y-%m-%d" "$@"; }
 
