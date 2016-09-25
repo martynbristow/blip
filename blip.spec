@@ -5,6 +5,9 @@ Release: 1%{?dist}
 License: MIT
 Group: Development/Library
 BuildArch: noarch
+Prefix: /usr
+Prefix: /usr/lib
+Prefix: /usr/share/man
 Source0: %{name}-%{version}.tar.gz
 URL: https://nicolaw.uk/blip
 Packager: Nicola Worthington <nicolaw@tfb.net>
