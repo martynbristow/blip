@@ -1,7 +1,7 @@
 Summary: Bash Library for Indolent Programmers
 Name: blip
-Version: 0.01
-Release: 1%{?dist}
+Version: %{version}
+Release: %{release}%{?dist}
 License: MIT
 Group: Development/Library
 BuildArch: noarch
