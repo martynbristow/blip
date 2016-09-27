@@ -20,3 +20,20 @@ get_gecos_name
 get_gecos_name postgres
 COMMANDS
 
+set +xe
+
+get_user_selection "Abort, retry, fail?" "f" "a" "r" "f"
+echo rc=$?
+
+get_user_selection "Abort, retry, fail?" "" "a" "r" "f"
+echo rc=$?
+
+get_user_confirmation "Continue?"
+echo rc=$?
+
+get_user_confirmation "Continue?" "y"
+echo rc=$?
+
+get_user_confirmation "Continue?" "n"
+echo rc=$?
+

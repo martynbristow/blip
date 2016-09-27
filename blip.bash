@@ -39,6 +39,70 @@ if [ "x$BASH" = "x" ] || [ "x$BASH_VERSION" = "x" ] || [ "x$BASHPID" = "x" ] ; t
     esac
 fi
 
+# Return the length of the longest argument.
+get_max_length () {
+    local max=0
+    for arg in "$@" ; do
+        if [[ ${#arg} -gt $max ]] ; then
+            max="${#arg}"
+        fi
+    done
+    echo -n "$max"
+}
+
+get_string_characters () {
+    local string="${1:-}"
+    local -i i=0
+    for (( i=0; i<${#string}; i++ )); do
+      echo "${string:$i:1}"
+    done
+}
+
+# Ask the user for confirmation, expecting a single character y or n reponse.
+# Returns 0 when selecting y, 1 when selecting n.
+get_user_confirmation () {
+    local question="${1:-Are you sure?}"
+    local default_response="${2:-}"
+    get_user_selection "$question" "$default_response" "y" "n"
+}
+
+get_user_selection () {
+    local question="${1:-Make a selection }"; shift
+    local default_response="${1:-}"; shift
+    local max_response_length="$(get_max_length "$@")"
+
+    # Replace with a standard argument validation routine.
+    # http://tldp.org/LDP/abs/html/exitcodes.html
+    if [[ $max_response_length -ne 1 ]] ; then
+        >&2 echo "get_user_selection() <question_prompt> <default_response> <valid_responseN>..."
+        >&2 echo "No valid_reponse arguments were passed, or 1 or more valid_response arguments were not exactly 1 character in length."
+        return 126
+    fi
+
+    local prompt=""
+    for arg in "$@" ; do
+        if [[ "$arg" = "$default_response" ]] ; then
+            arg="*$arg"
+        fi
+        prompt="${prompt:+$prompt|}$arg"
+    done
+
+    local input=""
+    while read -n 1 -e -r -p "${question}${prompt:+ [$prompt]: }" input ; do
+        if [[ -z "$input" ]] ; then
+            input="$default_response"
+        fi
+
+        local -i rc=0
+        for valid_response in "$@" ; do
+            if [[ "$input" = "$valid_response" ]] ; then
+                return $rc
+            fi
+            rc=$((rc+1))
+        done
+    done
+}
+
 # https://en.wikipedia.org/wiki/ISO_8601
 get_iso8601_date () { get_date "%Y-%m-%d" "$@"; }
 
