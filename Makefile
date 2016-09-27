@@ -12,6 +12,6 @@ install:
 	mkdir -pv "$(DESTDIR)$(libdir)"
 	mkdir -pv "$(DESTDIR)$(man3dir)"
 	install -m 0644 blip.bash "$(DESTDIR)$(libdir)"
-	install -m 0644 blip.3 "$(DESTDIR)$(man3dir)"
+	install -m 0644 blip.bash.3 "$(DESTDIR)$(man3dir)"
     
 .PHONY: install
