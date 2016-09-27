@@ -22,6 +22,22 @@ main () {
 
     local build_dir="$base/blip-${version}/"
 
+    pod2man \
+        --name="BLIP" \
+        --release="blip.bash $version" \
+        --center="blip.bash" \
+        --section=3 \
+        --utf8 "$base/blip.pod" > "$base/blip.3"
+
+    # Scan for missing documentation.
+    local missing_func_docs=""
+    while read function ; do
+        function="${function#* }"
+        if ! grep -q "^=head2 $function$" "$base/blip.pod" ; then
+            missing_func_docs="${missing_func_docs:+$missing_func_docs }${function%% *}"
+        fi
+    done < <(egrep -o '=head2 ^[a-z_]+\ \(\)' "$base/blip.bash" | sort -u)
+
     rm -Rf --one-file-system --preserve-root "$build_dir" \
         *.deb *.changes *.dsc *.build *.gz *.rpm
 
@@ -50,6 +66,12 @@ main () {
             --define "_build_name_fmt %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm"
         rpm -qlpiv "$base/blip-${version}-${release}.noarch.rpm"
     fi
+
+    if [[ -n "$missing_func_docs" ]] ; then
+        echo -e "\e[0;1;33mMissing function documentation:\e[0m $missing_func_docs"
+    fi
+
+    ls --color -la "$base"/*.deb "$base"/*.rpm "$base"/*.gz
 }
 
 main "$@"
