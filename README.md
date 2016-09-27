@@ -21,7 +21,7 @@ source /usr/lib/blip.bash
 * Export the manual to HTML as well as native \*NIX man pages.
 * Add comprehensive unit tests.
 * Configure automatic unit test integtation with Travis.
-** Setup automatic build of release tarballs, Deb and RPM packages upon GitHub repository commits (assuming a Travis pass of unit tests).
+    * Setup automatic build of release tarballs, Deb and RPM packages upon GitHub repository commits (assuming a Travis pass of unit tests).
 * Sign all the resulting release packages.
 
 ## See Also
