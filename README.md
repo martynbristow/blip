@@ -15,7 +15,7 @@ source /usr/lib/blip.bash
 
 ## TODO
 
-* Merge all the other cool and reusable stuff I've written in to this library.
+* Merge all the other cool and reusable stuff I've written in to this library (see pending functionality below).
 * Make all the shell scripting comply with a sensible style guide (like Google's one at https://google.github.io/styleguide/shell.xml).
 * Write a comprehensive manual page with code examples for each function.
 * Export the manual to HTML as well as native \*NIX man pages.
@@ -23,6 +23,15 @@ source /usr/lib/blip.bash
 * Configure automatic unit test integtation with Travis.
     * Setup automatic build of release tarballs, Deb and RPM packages upon GitHub repository commits (assuming a Travis pass of unit tests).
 * Sign all the resulting release packages.
+
+### Pending Functionality
+
+* Add `get_user_input()` - multi character user input without defaults.
+* Add process locking functions.
+* Add background daemonisation functions (ewww; ppl should use systemd).
+* Add standard logging functions.
+* Add syslogging functionality of all process `STDOUT` + `STDERR`.
+* Add console colour output options.
 
 ## See Also
 

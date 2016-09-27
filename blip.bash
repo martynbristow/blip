@@ -58,6 +58,14 @@ get_string_characters () {
     done
 }
 
+# Functionality to add:
+#    - Add get_user_input() - multi character user input without defaults
+#    - Add process locking functions
+#    - Add background daemonisation functions (ewww - ppl should use systemd)
+#    - Add standard logging functions
+#    - Add syslogging functionality of all process STDOUT + STDERR
+#    - Add console colour output options
+
 # Ask the user for confirmation, expecting a single character y or n reponse.
 # Returns 0 when selecting y, 1 when selecting n.
 get_user_confirmation () {
