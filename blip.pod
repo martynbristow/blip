@@ -94,11 +94,23 @@ Alias for C<is_int ()>.
 
 =head2 to_upper ()
 
-=head2 url_exists ()
+=head2 url_exists "$URL"
 
-=head2 url_http_header ()
+Return C<0> I<(true)> if C<$URL> exists, as determined by a 2XX HTTP response
+code. Otherwise returns C<1> I<(false)>.
+Requires the C<curl> command to be present in the shell search path.
 
-=head2 url_http_response_code ()
+=head2 url_http_header "$URL"
+
+Outputs (echos to C<STDOUT>) the full HTTP response headers returned by the remote
+web server for C<$URL>.
+Requires the C<curl> command to be present in the shell search path.
+
+=head2 url_http_response_code "$URL"
+
+Outputs (echos to C<STDOUT>) the HTTP response code returned by the remote
+web server for C<$URL>.
+Requires the C<curl> command to be present in the shell search path.
 
 =head1 ENVIRONMENT
 

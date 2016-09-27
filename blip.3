@@ -88,8 +88,8 @@ blip.bash \- Bash Library for Indolent Programmers
 \& 
 \& main () {
 \&     local name="$(get_gecos_name)"
-\&     if get_user_confirmation "Is your name $name?" ; then
-\&         echo "Nice to meet you $name."
+\&     if get_user_confirmation "Is your name ${name:\-(unknown)}?" ; then
+\&         echo "Nice to meet you ${name:\-mystery user}."
 \&     else
 \&         echo "I\*(Aqll just call you $(get_username) then."
 \&     fi
@@ -165,12 +165,24 @@ Alias for \f(CW\*(C`is_int ()\*(C'\fR.
 .IX Subsection "to_lower ()"
 .SS "to_upper ()"
 .IX Subsection "to_upper ()"
-.SS "url_exists ()"
-.IX Subsection "url_exists ()"
-.SS "url_http_header ()"
-.IX Subsection "url_http_header ()"
-.SS "url_http_response_code ()"
-.IX Subsection "url_http_response_code ()"
+.ie n .SS "url_exists ""$URL"""
+.el .SS "url_exists ``$URL''"
+.IX Subsection "url_exists $URL"
+Return \f(CW0\fR \fI(true)\fR if \f(CW$URL\fR exists, as determined by a 2XX \s-1HTTP\s0 response
+code. Otherwise returns \f(CW1\fR \fI(false)\fR.
+Requires the \f(CW\*(C`curl\*(C'\fR command to be present in the shell search path.
+.ie n .SS "url_http_header ""$URL"""
+.el .SS "url_http_header ``$URL''"
+.IX Subsection "url_http_header $URL"
+Outputs (echos to \f(CW\*(C`STDOUT\*(C'\fR) the full \s-1HTTP\s0 response headers returned by the remote
+web server for \f(CW$URL\fR.
+Requires the \f(CW\*(C`curl\*(C'\fR command to be present in the shell search path.
+.ie n .SS "url_http_response_code ""$URL"""
+.el .SS "url_http_response_code ``$URL''"
+.IX Subsection "url_http_response_code $URL"
+Outputs (echos to \f(CW\*(C`STDOUT\*(C'\fR) the \s-1HTTP\s0 response code returned by the remote
+web server for \f(CW$URL\fR.
+Requires the \f(CW\*(C`curl\*(C'\fR command to be present in the shell search path.
 .SH "ENVIRONMENT"
 .IX Header "ENVIRONMENT"
 .SS "\s-1BLIP_ALLOW_FOREIGN_SHELLS\s0"

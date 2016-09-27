@@ -33,7 +33,7 @@ main () {
     local missing_func_docs=""
     while read function ; do
         function="${function#* }"
-        if ! grep -q "^=head2 $function$" "$base/blip.pod" ; then
+        if ! grep -q "^=head2 $function " "$base/blip.pod" ; then
             missing_func_docs="${missing_func_docs:+$missing_func_docs }${function%% *}"
         fi
     done < <(egrep -o '=head2 ^[a-z_]+\ \(\)' "$base/blip.bash" | sort -u)
