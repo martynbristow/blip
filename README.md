@@ -10,7 +10,7 @@ _"But what about the lazy sysadmin that needs to write a script, where Bash genu
 source /usr/lib/blip.bash
 ```
 
-Please see the man page `man blip.bash` for full documentation.
+Please see the man page `man blip.bash` or [bash.pod for full documentation](blob/master/blip.bash.pod).
 
 * https://nicolaw.uk/blip
 * https://github.com/neechbear/blip/
