@@ -39,6 +39,12 @@ if [ "x$BASH" = "x" ] || [ "x$BASH_VERSION" = "x" ] || [ "x$BASHPID" = "x" ] ; t
     esac
 fi
 
+# Assign command names to run from $PATH unless otherwise already defined.
+BLIP_EXTERNAL_CMD_CURL="${BLIP_EXTERNAL_CMD_CURL:-curl}"
+BLIP_EXTERNAL_CMD_DATE="${BLIP_EXTERNAL_CMD_DATE:-date}"
+BLIP_EXTERNAL_CMD_GREP="${BLIP_EXTERNAL_CMD_GREP:-grep}"
+BLIP_EXTERNAL_CMD_EGREP="${BLIP_EXTERNAL_CMD_EGREP:-egrep}" # Remove this dependency!
+
 # Return the length of the longest argument.
 get_max_length () {
     local max=0
@@ -126,24 +132,25 @@ get_date () {
         if [[ "$when" = "-1" ]] ; then
             when=""
         fi
-        date ${when:+-d "$when"} +%s
+        $BLIP_EXTERNAL_CMD_DATE ${when:+-d "$when"} +%s
     fi
 }
 
 url_http_header () {
-    curl -I "$1"
+    $BLIP_EXTERNAL_CMD_CURL -s -I "$1"
 }
 
 url_http_response_code () {
-    url_http_header "$1" | grep ^HTTP
+    url_http_header "$1" | $BLIP_EXTERNAL_CMD_GREP ^HTTP
 }
 
 url_exists () {
     local url="$1"
     if [[ "$url" =~ ^file:// ]] ; then
-        curl -I "$url" -o /dev/null 2>/dev/null
+        $BLIP_EXTERNAL_CMD_CURL -s -I "$url" -o /dev/null 2>/dev/null
     else
-        url_http_response_code "$url" | egrep -qw '^HTTP[^ ]* 2[0-9][0-9]'
+        url_http_response_code "$url" \
+            | $BLIP_EXTERNAL_CMD_EGREP -qw '^HTTP[^ ]* 2[0-9][0-9]'
     fi
 }
 
@@ -159,7 +166,7 @@ is_in_path () {
 
 is_ipv4_address () {
     local regex='(?<![0-9])(?:(?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]))(?![0-9])'
-    grep -Pq "^$regex$" <<< "${1:-}"
+    $BLIP_EXTERNAL_CMD_GREP -Pq "^$regex$" <<< "${1:-}"
 }
 
 is_ipv4_prefix () {
@@ -174,7 +181,7 @@ is_ipv4_prefix () {
 
 is_ipv6_address () {
     local regex='((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?'
-    grep -Pq "^$regex$" <<< "${1:-}"
+    $BLIP_EXTERNAL_CMD_GREP -Pq "^$regex$" <<< "${1:-}"
 }
 
 is_ipv6_prefix () {
