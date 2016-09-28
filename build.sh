@@ -6,18 +6,21 @@
 # and packages so that you don't have to do this kind of stuff.
 #
 # https://nicolaw.uk/DebianPackaging
+# http://www.rpm.org/max-rpm/s1-rpm-pgp-signing-packages.html
 
 set -euxo pipefail
+umask 0077
 
 main () {
     local base="$(readlink -f "$(dirname "$0")")"
-    [[ -e "$base/blip.bash" ]]
-    source "$base/blip.bash"
+    local pkg="blip"
+    [[ -e "$base/${pkg}.bash" ]]
+    source "$base/${pkg}.bash"
 
     # Version information for releases spewed in a couple of different
     # places for Debs and RPMs, so this argument is mostly meaningless
     # at the moment. It needs to be tied in to git release tags anyway.
-    local dch_version_full="$(egrep -o '^blip \([0-9]+\.[0-9]+(-[0-9]+)?\) ' "$base/debian/changelog" | egrep -o '[0-9]+\.[0-9]+(-[0-9]+)?' | head -1)"
+    local dch_version_full="$(egrep -o "^${pkg} \([0-9]+\.[0-9]+(-[0-9]+)?\) " "$base/debian/changelog" | egrep -o '[0-9]+\.[0-9]+(-[0-9]+)?' | head -1)"
     local dch_version="${dch_version_full%-*}"
     local dch_release="${dch_version_full#*-}"
     local version="${1:-$dch_version}"
@@ -27,58 +30,87 @@ main () {
     [[ "$version" =~ ^[0-9]+\.[0-9]+$ ]]
     is_int "$release"
 
-    local build_dir="$base/blip-${version}/"
+    local build_base="$base/build"
+    local build_dir="$build_base/${pkg}-${version}"
+    local release_dir="$base/release/${pkg}-${version}${release:+-$release}"
 
+    # We should sign stuff if we're the author.
+    local rpmbuild_extra_args= gpg_keyid=
+    if [[ "$(hostid)" = "007f0101" ]] && [[ "$(get_username)" = "nicolaw" ]] ; then
+        gpg_keyid="6393F646"
+        rpmbuild_extra_args="--sign"
+        while read -r line ; do
+            if ! grep -q "^$line$" ~/.rpmmacros ; then
+                echo "$line" >> ~/.rpmmacros
+            fi
+        done <<RPMMACROS
+%_signature gpg
+%_gpg_name $(get_gecos_name)
+%_gpgbin /usr/bin/gpg
+RPMMACROS
+    fi
+
+    # Generate some Groff man pages from the POD source.
     pod2man \
         --name="BLIP.BASH" \
-        --release="blip.bash $version" \
-        --center="blip.bash" \
+        --release="${pkg}.bash $version" \
+        --center="${pkg}.bash" \
         --section=3 \
-        --utf8 "$base/blip.bash.pod" > "$base/blip.bash.3"
+        --utf8 "$base/${pkg}.bash.pod" > "$base/${pkg}.bash.3"
 
     # Scan for missing documentation.
     local missing_func_docs=""
     while read function ; do
         function="${function#* }"
-        if ! grep -q "^=head2 $function " "$base/blip.bash.pod" ; then
+        if ! grep -q "^=head2 $function " "$base/${pkg}.bash.pod" ; then
             missing_func_docs="${missing_func_docs:+$missing_func_docs }${function%% *}"
         fi
-    done < <(egrep -o '=head2 ^[a-z_]+\ \(\)' "$base/blip.bash" | sort -u)
-
-    rm -Rf --one-file-system --preserve-root "$build_dir" \
-        *.deb *.changes *.dsc *.build *.gz *.rpm
+    done < <(egrep -o '=head2 ^[a-z_]+\ \(\)' "$base/${pkg}.bash" | sort -u)
 
     # Build tarball.
-    mkdir -p "$build_dir"
+    rm -Rf --one-file-system --preserve-root "$build_base"
+    mkdir -p "$build_dir" "$release_dir"
     rsync -av --files-from="$base/MANIFEST" "$base" "$build_dir"
-    tar -C "$base" -zcvf "$base/blip-${version}.tar.gz" "$(basename "$build_dir")"
+    tar -C "$build_base" -zcvf "$build_base/${pkg}-${version}.tar.gz" "$(basename "$build_dir")"
+    cp -v "$build_base/${pkg}-${version}.tar.gz" "$release_dir"
 
     # Build Deb package.
     if is_in_path "debuild" "dpkg-deb" ; then
-        ln -s "$base/blip-${version}.tar.gz" "$base/blip_${version}.orig.tar.gz"
+        cp -v "$build_base/${pkg}-${version}.tar.gz" "$build_base/${pkg}_${version}.orig.tar.gz"
         pushd "$build_dir"
         debuild -us -uc
         popd
-        dpkg-deb -I "blip_${version}${release:+-$release}_all.deb"
-        dpkg-deb -c "blip_${version}${release:+-$release}_all.deb"
+        pushd "$build_base"
+        if [[ -n "$gpg_keyid" ]] ; then
+            debsign -k "$gpg_keyid" "$build_base/${pkg}_${version}${release:+-$release}.dsc"
+            gpg --verify "$build_base/${pkg}_${version}${release:+-$release}.dsc"
+        fi
+        mv -v *.dsc *.changes *.build *.debian.tar.gz *.orig.tar.gz *.deb "$release_dir"
+        dpkg-deb -I "$release_dir/${pkg}_${version}${release:+-$release}_all.deb"
+        dpkg-deb -c "$release_dir/${pkg}_${version}${release:+-$release}_all.deb"
+        popd
     fi
 
     # Build RPM package.
     if is_in_path "rpmbuild" "rpm" ; then
-        rpmbuild -ba blip.spec \
+        rpmbuild -ba "${pkg}.spec" \
+            ${rpmbuild_extra_args} \
+            ${pkg:+--define "name $pkg"} \
             ${version:+--define "version $version"} \
             ${release:+--define "release $release"} \
-            --define "_sourcedir $base" \
-            --define "_rpmdir $base" \
+            --define "_sourcedir $build_base" \
+            --define "_rpmdir $release_dir" \
             --define "_build_name_fmt %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm"
-        rpm -qlpiv "$base/blip-${version}${release:+-$release}.noarch.rpm"
+        rpm -qlpiv "$release_dir/${pkg}-${version}${release:+-$release}.noarch.rpm"
     fi
 
+    # Print a summary of any functions that need to be added to documentation.
     if [[ -n "$missing_func_docs" ]] ; then
         echo -e "\e[0;1;33mMissing function documentation:\e[0m $missing_func_docs"
     fi
 
-    ls --color -la "$base"/*.deb "$base"/*.rpm "$base"/*.gz
+    # List the resulting release package files.
+    ls --color -la "$release_dir"
 }
 
 main "$@"
