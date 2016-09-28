@@ -26,7 +26,6 @@ Please see the man page `man blip.bash` for full documentation.
 * Add comprehensive unit tests.
 * Configure automatic unit test integtation with Travis.
     * Setup automatic build of release tarballs, Deb and RPM packages upon GitHub repository commits (assuming a Travis pass of unit tests).
-* Sign all the resulting release packages.
 
 ### Pending Functionality
 
