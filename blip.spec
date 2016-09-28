@@ -1,5 +1,5 @@
 Summary: Bash Library for Indolent Programmers
-Name: blip
+Name: %{name}
 Version: %{version}
 Release: %{release}%{?dist}
 License: MIT
