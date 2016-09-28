@@ -71,7 +71,7 @@
 .\" ========================================================================
 .\"
 .IX Title "BLIP.BASH 3"
-.TH BLIP.BASH 3 "2016-09-27" "blip.bash 0.01" "blip.bash"
+.TH BLIP.BASH 3 "2016-09-28" "blip.bash 0.01" "blip.bash"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -189,6 +189,26 @@ Requires the \f(CW\*(C`curl\*(C'\fR command to be present in the shell search pa
 .IX Subsection "BLIP_ALLOW_FOREIGN_SHELLS"
 When set to \f(CW1\fR, inhibits \f(CW\*(C`exit\*(C'\fR functionality to abort operation
 when \fBblip\fR determines that it is not running inside a bash shell interpreter.
+.SS "\s-1BLIP_EXTERNAL_CMD_CURL\s0"
+.IX Subsection "BLIP_EXTERNAL_CMD_CURL"
+Specifies an explicit command path when executing the external dependency
+command \f(CW\*(C`curl\*(C'\fR. Defaults to \f(CW\*(C`curl\*(C'\fR without an explicit path in order to
+search \f(CW$PATH\fR.
+.SS "\s-1BLIP_EXTERNAL_CMD_DATE\s0"
+.IX Subsection "BLIP_EXTERNAL_CMD_DATE"
+Specifies an explicit command path when executing the external dependency
+command \f(CW\*(C`date\*(C'\fR. Defaults to \f(CW\*(C`date\*(C'\fR without an explicit path in order to
+search \f(CW$PATH\fR.
+.SS "\s-1BLIP_EXTERNAL_CMD_GREP\s0"
+.IX Subsection "BLIP_EXTERNAL_CMD_GREP"
+Specifies an explicit command path when executing the external dependency
+command \f(CW\*(C`grep\*(C'\fR. Defaults to \f(CW\*(C`grep\*(C'\fR without an explicit path in order to
+search \f(CW$PATH\fR.
+.SS "\s-1BLIP_EXTERNAL_CMD_EGREP\s0"
+.IX Subsection "BLIP_EXTERNAL_CMD_EGREP"
+Specifies an explicit command path when executing the external dependency
+command \f(CW\*(C`egrep\*(C'\fR. Defaults to \f(CW\*(C`egrep\*(C'\fR without an explicit path in order to
+search \f(CW$PATH\fR.
 .SH "AUTHOR"
 .IX Header "AUTHOR"
 Nicola Worthington <nicola@tfb.net>.

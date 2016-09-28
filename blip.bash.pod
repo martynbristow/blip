@@ -119,6 +119,30 @@ Requires the C<curl> command to be present in the shell search path.
 When set to C<1>, inhibits C<exit> functionality to abort operation
 when B<blip> determines that it is not running inside a bash shell interpreter.
 
+=head2 BLIP_EXTERNAL_CMD_CURL
+
+Specifies an explicit command path when executing the external dependency
+command C<curl>. Defaults to C<curl> without an explicit path in order to
+search C<$PATH>.
+
+=head2 BLIP_EXTERNAL_CMD_DATE
+
+Specifies an explicit command path when executing the external dependency
+command C<date>. Defaults to C<date> without an explicit path in order to
+search C<$PATH>.
+
+=head2 BLIP_EXTERNAL_CMD_GREP
+
+Specifies an explicit command path when executing the external dependency
+command C<grep>. Defaults to C<grep> without an explicit path in order to
+search C<$PATH>.
+
+=head2 BLIP_EXTERNAL_CMD_EGREP
+
+Specifies an explicit command path when executing the external dependency
+command C<egrep>. Defaults to C<egrep> without an explicit path in order to
+search C<$PATH>.
+
 =head1 AUTHOR
 
 Nicola Worthington <nicola@tfb.net>.
