@@ -2,9 +2,7 @@ blip.bash
 blip.bash.3
 blip.bash.pod
 blip.spec
-MANIFEST
 LICENSE
-README.md
 Makefile
 debian/blip.dirs
 debian/control
