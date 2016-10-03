@@ -1,10 +1,35 @@
 #!/bin/bash
-
+#
 # blip - Bash Library for Indolent Programmers
-
-# Author: Nicola Worthington <nicolaw@tfb.net>
-#         Sergej Alikov
-
+#
+# Please see the man page blip.bash(3) or bash.pod for full documentation.
+#
+# https://nicolaw.uk/blip
+# https://github.com/neechbear/blip/
+# https://github.com/neechbear/blip/blob/master/blip.bash.pod
+#
+# MIT License
+#
+# Copyright (c) 2016 Nicola Worthington
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 # Some inspirational sources:
 #   https://nicolaw.uk/bash
 #   http://mywiki.wooledge.org/BashFAQ
@@ -13,11 +38,11 @@
 #   http://www.bashinator.org/
 #   https://dberkholz.com/2011/04/07/bash-shell-scripting-libraries/
 #   https://github.com/Dieterbe/libui-sh/blob/master/libui.sh
-
+#
 # Get a nice list of bash built-ins without forking crap for formatting:
 #     while read -r _ cmd ; do echo $cmd ; done < <(enable -a)
-
-# Attempted function naming conventions:
+#
+# Preferred function naming conventions:
 #   is_*    An evaluation test that returns boolean true or false only.
 #           No STDOUT should be emitted.
 #
@@ -238,7 +263,7 @@ get_gecos_info () {
 # English language boolean true or false.
 is_true () { [[ "${1:-}" =~ ^yes|on|enabled?|true|1$ ]]; }
 is_false () { [[ "${1:-}" =~ ^no|off|disabled?|false|0$ ]]; }
-is_boolean () { is_true "$1" || is_false "$1"; }
+is_boolean () { is_true "$@" || is_false "$@"; }
 
 # Evaulates if single argument input is an integer.
 is_int () { [[ "${1:-}" =~ ^-?[0-9]+$ ]]; }
