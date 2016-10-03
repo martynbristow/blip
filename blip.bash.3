@@ -137,10 +137,12 @@ Alias for \f(CW\*(C`abs ()\*(C'\fR.
 .IX Subsection "get_unixtime ()"
 .SS "get_user_confirmation ()"
 .IX Subsection "get_user_confirmation ()"
+See also: \f(CW\*(C`select\*(C'\fR bash built-in.
 .SS "get_username ()"
 .IX Subsection "get_username ()"
 .SS "get_user_selection ()"
 .IX Subsection "get_user_selection ()"
+See also: \f(CW\*(C`select\*(C'\fR bash built-in.
 .SS "is_abs_int ()"
 .IX Subsection "is_abs_int ()"
 .SS "is_absolute_integer ()"
@@ -150,15 +152,24 @@ Alias for \f(CW\*(C`is_abs_int ()\*(C'\fR.
 .IX Subsection "is_boolean ()"
 .SS "is_false ()"
 .IX Subsection "is_false ()"
+Return \f(CW0\fR \fItrue\fR if \f(CW$ARG1\fR may be considered boolean false by a
+human. Values to be considered true include: \f(CW0\fR, \f(CW\*(C`false\*(C'\fR, \f(CW\*(C`no\*(C'\fR, \f(CW\*(C`off\*(C'\fR,
+\&\f(CW\*(C`disable\*(C'\fR and \f(CW\*(C`disabled\*(C'\fR.
 .SS "is_in_path ()"
 .IX Subsection "is_in_path ()"
-.SS "is_int ()"
-.IX Subsection "is_int ()"
+.ie n .SS "is_int ""$ARG1"""
+.el .SS "is_int ``$ARG1''"
+.IX Subsection "is_int $ARG1"
+Return \f(CW0\fR \fItrue\fR if \f(CW$ARG1\fR is an integer value.
 .SS "is_integer ()"
 .IX Subsection "is_integer ()"
 Alias for \f(CW\*(C`is_int ()\*(C'\fR.
-.SS "is_true ()"
-.IX Subsection "is_true ()"
+.ie n .SS "is_true ""$ARG1"""
+.el .SS "is_true ``$ARG1''"
+.IX Subsection "is_true $ARG1"
+Return \f(CW0\fR \fItrue\fR if \f(CW$ARG1\fR may be considered boolean true by a
+human. Values to be considered true include: \f(CW1\fR, \f(CW\*(C`true\*(C'\fR, \f(CW\*(C`yes\*(C'\fR, \f(CW\*(C`on\*(C'\fR,
+\&\f(CW\*(C`enable\*(C'\fR and \f(CW\*(C`enabled\*(C'\fR.
 .SS "is_word_in_string ()"
 .IX Subsection "is_word_in_string ()"
 .SS "to_lower ()"

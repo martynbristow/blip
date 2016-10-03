@@ -121,6 +121,7 @@ get_user_confirmation () {
     get_user_selection "$question" "$default_response" "y" "n"
 }
 
+# See also: bash's "select" built-in.
 get_user_selection () {
     local question="${1:-Make a selection }"; shift
     local default_response="${1:-}"; shift
