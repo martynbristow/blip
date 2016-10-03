@@ -112,12 +112,43 @@ Outputs (echos to C<STDOUT>) the HTTP response code returned by the remote
 web server for C<$URL>.
 Requires the C<curl> command to be present in the shell search path.
 
+=head1 VARIABLES
+
+=head2 BLIP_VERSION
+
+Contains the version of B<blip> as a string value.
+
+Example: C<0.01-3-prerelease>
+
+=head2 BLIP_VERSINFO
+
+A 4-element array containing version information about the version of B<blip>.
+
+Example:
+
+ BLIP_VERSINFO[0] = 0          # Major version number
+ BLIP_VERSINFO[1] = 01         # Minor version number
+ BLIP_VERSINFO[2] = 3          # Patch / release number
+ BLIP_VERSINFO[3] = prerelease # Release status
+
 =head1 ENVIRONMENT
 
 =head2 BLIP_ALLOW_FOREIGN_SHELLS
 
 When set to C<1>, inhibits C<exit> functionality to abort operation
 when B<blip> determines that it is not running inside a bash shell interpreter.
+
+=head2 BLIP_REQUIRE_VERSION
+
+Specifies the minimum version of B<blip> required by the calling parent script.
+B<blip> will C<exit> with a non-zero (C<2>) return code if the
+C<${BLIP_VERSINFO[@]}> array does not indicate a version that is equal to
+or greater.
+
+Example:
+
+ BLIP_REQUIRE_VERSION="0.02-13"
+ source /usr/lib/blip.bash
 
 =head2 BLIP_EXTERNAL_CMD_CURL
 

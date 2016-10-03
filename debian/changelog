@@ -1,3 +1,11 @@
+blip (0.01-3) UNRELEASED; urgency=low
+
+  * Added BLIP_VERSION and BLIP_VERSINFO variables.
+  * Added license agreement to header comments.
+  * Other minor changes.
+
+ --  Nicola Worthington <nicolaw@tfb.net>  Mon, 03 Oct 2016 20:10:00 +0100
+
 blip (0.01-2) UNRELEASED; urgency=low
 
   * Testing build.sh packaging signing functionality.

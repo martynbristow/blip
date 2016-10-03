@@ -5,6 +5,7 @@
 
 set -euo pipefail
 
+BLIP_REQUIRE_VERSION="0.01-3"
 source blip.bash
 
 rc_to_colour () {

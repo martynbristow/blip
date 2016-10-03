@@ -71,7 +71,7 @@
 .\" ========================================================================
 .\"
 .IX Title "BLIP.BASH 3"
-.TH BLIP.BASH 3 "2016-09-28" "blip.bash 0.01" "blip.bash"
+.TH BLIP.BASH 3 "2016-10-03" "blip.bash 0.01" "blip.bash"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -183,12 +183,44 @@ Requires the \f(CW\*(C`curl\*(C'\fR command to be present in the shell search pa
 Outputs (echos to \f(CW\*(C`STDOUT\*(C'\fR) the \s-1HTTP\s0 response code returned by the remote
 web server for \f(CW$URL\fR.
 Requires the \f(CW\*(C`curl\*(C'\fR command to be present in the shell search path.
+.SH "VARIABLES"
+.IX Header "VARIABLES"
+.SS "\s-1BLIP_VERSION\s0"
+.IX Subsection "BLIP_VERSION"
+Contains the version of \fBblip\fR as a string value.
+.PP
+Example: \f(CW\*(C`0.01\-3\-prerelease\*(C'\fR
+.SS "\s-1BLIP_VERSINFO\s0"
+.IX Subsection "BLIP_VERSINFO"
+A 4\-element array containing version information about the version of \fBblip\fR.
+.PP
+Example:
+.PP
+.Vb 4
+\& BLIP_VERSINFO[0] = 0          # Major version number
+\& BLIP_VERSINFO[1] = 01         # Minor version number
+\& BLIP_VERSINFO[2] = 3          # Patch / release number
+\& BLIP_VERSINFO[3] = prerelease # Release status
+.Ve
 .SH "ENVIRONMENT"
 .IX Header "ENVIRONMENT"
 .SS "\s-1BLIP_ALLOW_FOREIGN_SHELLS\s0"
 .IX Subsection "BLIP_ALLOW_FOREIGN_SHELLS"
 When set to \f(CW1\fR, inhibits \f(CW\*(C`exit\*(C'\fR functionality to abort operation
 when \fBblip\fR determines that it is not running inside a bash shell interpreter.
+.SS "\s-1BLIP_REQUIRE_VERSION\s0"
+.IX Subsection "BLIP_REQUIRE_VERSION"
+Specifies the minimum version of \fBblip\fR required by the calling parent script.
+\&\fBblip\fR will \f(CW\*(C`exit\*(C'\fR with a non-zero (\f(CW2\fR) return code if the
+\&\f(CW\*(C`${BLIP_VERSINFO[@]}\*(C'\fR array does not indicate a version that is equal to
+or greater.
+.PP
+Example:
+.PP
+.Vb 2
+\& BLIP_REQUIRE_VERSION="0.02\-13"
+\& source /usr/lib/blip.bash
+.Ve
 .SS "\s-1BLIP_EXTERNAL_CMD_CURL\s0"
 .IX Subsection "BLIP_EXTERNAL_CMD_CURL"
 Specifies an explicit command path when executing the external dependency

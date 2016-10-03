@@ -59,9 +59,25 @@ if [ "x$BASH" = "x" ] || [ "x$BASH_VERSION" = "x" ] || [ "x$BASHPID" = "x" ] ; t
     case "x$BLIP_ALLOW_FOREIGN_SHELLS" in
         x1|xyes|xtrue|xon|xenable|xenabled) true ;;
         *)
-            echo "blip.bash detected a foreign shell interpreter is running; exiting!" >&2
+            echo "blip.bash detected a foreign shell interpreter is running;" \
+                 "exiting!" >&2
             exit 2
     esac
+fi
+
+# TODO(nicolaw): Work out how to automatically populate these values at build
+#                and release (packaging) time.
+declare -rg BLIP_VERSION="0.01-3-prerelease"
+declare -rga BLIP_VERSINFO=("0" "01" "3" "prerelease")
+if     [[ -n "${BLIP_REQUIRE_VERSION:-}" ]] ; then
+    declare -a BLIP_REQUIRE_VERSINFO=(${BLIP_REQUIRE_VERSION//[-.]/ })
+    if   [[ ${BLIP_REQUIRE_VERSINFO[0]:-} -gt ${BLIP_VERSINFO[0]} ]] \
+      || [[ ${BLIP_REQUIRE_VERSINFO[1]:-} -gt ${BLIP_VERSINFO[1]} ]] \
+      || [[ ${BLIP_REQUIRE_VERSINFO[2]:-} -gt ${BLIP_VERSINFO[2]} ]] ; then
+        echo "blip.bash version $BLIP_VERSION does not satisfy minimum" \
+             "required version $BLIP_REQUIRE_VERSION; exiting!" >&2
+        exit 2
+    fi
 fi
 
 # Assign command names to run from $PATH unless otherwise already defined.
