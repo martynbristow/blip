@@ -5,8 +5,14 @@
 
 set -euo pipefail
 
+BLIP_ANSI_VARIABLES=1
 BLIP_REQUIRE_VERSION="0.01-3"
 source blip.bash
+
+echo "${ANSI_FG_YELLOW}${ANSI_BOLD_ON}Hello world.${ANSI_RESET}"
+echo "${ANSI[blink]}${ANSI[bg_white]}${ANSI[bold]}${ANSI[red]}${ANSI[underline]}Hello world.${ANSI[reset]}"
+compgen -A variable | grep ANSI
+echo "${!ANSI[@]}"
 
 rc_to_colour () {
     if [[ ${1:-} -eq 0 ]] ; then

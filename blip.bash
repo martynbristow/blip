@@ -359,3 +359,125 @@ get_file_age () {
     echo -n $(( $(get_unixtime) - $(stat -c %Y "${1:-}") ))
 }
 
+# Define ANSI colour code variables.
+# https://en.wikipedia.org/wiki/ANSI_escape_code
+if is_true "${BLIP_ANSI_VARIABLES:-}" ; then
+    declare -rx ANSI_RESET="[0m"          #
+
+    declare -rx ANSI_BLINK_SLOW="[5m"     #
+    declare -rx ANSI_BLINK_FAST="[6m"     #
+    declare -rx ANSI_BLINK_OFF="[25m"     #
+
+    declare -rx ANSI_HIDDEN_ON="[8m"      #
+    declare -rx ANSI_HIDDEN_OFF="[28m"    #
+
+    declare -rx ANSI_STRIKE_ON="[9m"      #
+    declare -rx ANSI_STRIKE_OFF="[29m"    #
+    declare -rx ANSI_ITALIC_ON="[3m"      #
+    declare -rx ANSI_ITALIC_OFF="[23m"    #
+
+    declare -rx ANSI_UNDERLINE_ON="[4m"   #
+    declare -rx ANSI_UNDERLINE_OFF="[24m" #
+    declare -rx ANSI_OVERLINE_ON="[53m"   #
+    declare -rx ANSI_OVERLINE_OFF="[55m"  #
+
+    declare -rx ANSI_FRAME_ON="[51m"      #
+    declare -rx ANSI_FRAME_OFF="[54m"     #
+    declare -rx ANSI_ENCIRCLE_ON="[52m"   #
+    declare -rx ANSI_ENCIRCLE_OFF="[54m"  #
+
+    declare -rx ANSI_BOLD_ON="[1m"        #
+    declare -rx ANSI_BOLD_OFF="[22m"      #
+    declare -rx ANSI_FAINT_ON="[2m"       #
+    declare -rx ANSI_FAINT_OFF="[22m"     #
+
+    declare -rx ANSI_INVERSE_ON="[7m"     #
+    declare -rx ANSI_INVERSE_OFF="[27m"   #
+
+    declare -rx ANSI_FG_BLACK="[30m"      #
+    declare -rx ANSI_FG_RED="[31m"        #
+    declare -rx ANSI_FG_GREEN="[32m"      #
+    declare -rx ANSI_FG_YELLOW="[33m"     #
+    declare -rx ANSI_FG_BLUE="[34m"       #
+    declare -rx ANSI_FG_MAGENTA="[35m"    #
+    declare -rx ANSI_FG_CYAN="[36m"       #
+    declare -rx ANSI_FG_WHITE="[37m"      #
+    declare -rx ANSI_FG_DEFAULT="[39m"    #
+
+    declare -rx ANSI_BG_BLACK="[40m"      #
+    declare -rx ANSI_BG_RED="[41m"        #
+    declare -rx ANSI_BG_GREEN="[42m"      #
+    declare -rx ANSI_BG_YELLOW="[43m"     #
+    declare -rx ANSI_BG_BLUE="[44m"       #
+    declare -rx ANSI_BG_MAGENTA="[45m"    #
+    declare -rx ANSI_BG_CYAN="[46m"       #
+    declare -rx ANSI_BG_WHITE="[47m"      #
+    declare -rx ANSI_BG_DEFAULT="[49m"    #
+
+    declare -rxA ANSI=(
+        [reset]="$ANSI_RESET"
+        [blink]="$ANSI_BLINK_SLOW"
+        [blink_slow]="$ANSI_BLINK_SLOW"
+        [blink_fast]="$ANSI_BLINK_FAST"
+        [blink_slow_on]="$ANSI_BLINK_SLOW"
+        [blink_fast_on]="$ANSI_BLINK_FAST"
+        [blink_off]="$ANSI_BLINK_OFF"
+        [hidden]="$ANSI_HIDDEN_ON"
+        [hidden_on]="$ANSI_HIDDEN_ON"
+        [hidden_off]="$ANSI_HIDDEN_OFF"
+        [strike]="$ANSI_STRIKE_ON"
+        [strike_on]="$ANSI_STRIKE_ON"
+        [strike_off]="$ANSI_STRIKE_OFF"
+        [italic]="$ANSI_ITALIC_ON"
+        [italic_on]="$ANSI_ITALIC_ON"
+        [italic_off]="$ANSI_ITALIC_OFF"
+        [underline]="$ANSI_UNDERLINE_ON"
+        [underline_on]="$ANSI_UNDERLINE_ON"
+        [underline_off]="$ANSI_UNDERLINE_OFF"
+        [overline]="$ANSI_OVERLINE_ON"
+        [overline_on]="$ANSI_OVERLINE_ON"
+        [overline_off]="$ANSI_OVERLINE_OFF"
+        [frame]="$ANSI_FRAME_ON"
+        [frame_on]="$ANSI_FRAME_ON"
+        [frame_off]="$ANSI_FRAME_OFF"
+        [encircle]="$ANSI_ENCIRCLE_ON"
+        [encircle_on]="$ANSI_ENCIRCLE_ON"
+        [encircle_off]="$ANSI_ENCIRCLE_OFF"
+        [bold]="$ANSI_BOLD_ON"
+        [bold_on]="$ANSI_BOLD_ON"
+        [bold_off]="$ANSI_BOLD_OFF"
+        [faint]="$ANSI_FAINT_ON"
+        [faint_on]="$ANSI_FAINT_ON"
+        [faint_off]="$ANSI_FAINT_OFF"
+        [inverse]="$ANSI_INVERSE_ON"
+        [inverse_on]="$ANSI_INVERSE_ON"
+        [inverse_off]="$ANSI_INVERSE_OFF"
+        [black]="$ANSI_FG_BLACK"
+        [fg_black]="$ANSI_FG_BLACK"
+        [bg_black]="$ANSI_BG_BLACK"
+        [red]="$ANSI_FG_RED"
+        [fg_red]="$ANSI_FG_RED"
+        [bg_red]="$ANSI_BG_RED"
+        [green]="$ANSI_FG_GREEN"
+        [fg_green]="$ANSI_FG_GREEN"
+        [bg_green]="$ANSI_BG_GREEN"
+        [yellow]="$ANSI_FG_YELLOW"
+        [fg_yellow]="$ANSI_FG_YELLOW"
+        [bg_yellow]="$ANSI_BG_YELLOW"
+        [blue]="$ANSI_FG_BLUE"
+        [fg_blue]="$ANSI_FG_BLUE"
+        [bg_blue]="$ANSI_BG_BLUE"
+        [magenta]="$ANSI_FG_MAGENTA"
+        [fg_magenta]="$ANSI_FG_MAGENTA"
+        [bg_magenta]="$ANSI_BG_MAGENTA"
+        [cyan]="$ANSI_FG_CYAN"
+        [fg_cyan]="$ANSI_FG_CYAN"
+        [bg_cyan]="$ANSI_BG_CYAN"
+        [white]="$ANSI_FG_WHITE"
+        [fg_white]="$ANSI_FG_WHITE"
+        [bg_white]="$ANSI_BG_WHITE"
+        [fg_default]="$ANSI_FG_DEFAULT"
+        [bg_default]="$ANSI_BG_DEFAULT"
+        )
+fi
+
