@@ -34,6 +34,8 @@ Please see the man page `man blip.bash` or [bash.pod for full documentation](bli
 * Add background daemonisation functions (ewww; ppl should use systemd).
 * Add standard logging functions.
 * Add syslogging functionality of all process `STDOUT` + `STDERR`.
+* Add trap handler queues/arrays.
+* Add common array manipulation functions.
 
 ## See Also
 
