@@ -52,6 +52,12 @@
 #           Newline characters should be omitted from output when only
 #           a single line of output is ever expected.
 
+# Action to take on fatal conditions. Test is written in old bourne compatible
+# syntax to account for old limited and buggy conditionals.
+if [ "x${BLIP_INTERNAL_FATAL_ACTION:-}" = "x" ] ; then
+    BLIP_INTERNAL_FATAL_ACTION="exit 2"
+fi
+
 # Try and bail out early if we detect that we are probably not running
 # from inside a bash shell interpreter. You may disable the exit on
 # non-Bash shell functionality by setting BLIP_ALLOW_FOREIGN_SHELLS=1.
@@ -61,7 +67,7 @@ if [ "x$BASH" = "x" ] || [ "x$BASH_VERSION" = "x" ] || [ "x$BASHPID" = "x" ] ; t
         *)
             echo "blip.bash detected a foreign shell interpreter is running;" \
                  "exiting!" >&2
-            exit 2
+            $BLIP_INTERNAL_FATAL_ACTION
     esac
 fi
 
@@ -86,7 +92,7 @@ if [[ -n "${BLIP_REQUIRE_VERSION:-}" ]] ; then
       || [[ ${BLIP_REQUIRE_VERSINFO[2]:-} -gt ${BLIP_VERSINFO[2]} ]] ; then
         echo "blip.bash version $BLIP_VERSION does not satisfy minimum" \
              "required version $BLIP_REQUIRE_VERSION; exiting!" >&2
-        exit 2
+        $BLIP_INTERNAL_FATAL_ACTION
     fi
     unset BLIP_REQUIRE_VERSIFO
 fi

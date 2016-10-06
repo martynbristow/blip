@@ -231,13 +231,24 @@ through the following code example:
 \& echo "${!ANSI[@]}"
 .Ve
 .PP
-See also \s-1BLIP_ANSI_VARIABLES\s0 in the \s-1ENVIRONMENT\s0 section below.
+See also #BLIP_ANSI_VARIABLES in the #ENVIRONMENT section below.
 .SH "ENVIRONMENT"
 .IX Header "ENVIRONMENT"
 .SS "\s-1BLIP_ALLOW_FOREIGN_SHELLS\s0"
 .IX Subsection "BLIP_ALLOW_FOREIGN_SHELLS"
 When set to \f(CW1\fR, inhibits \f(CW\*(C`exit\*(C'\fR functionality to abort operation
 when \fBblip\fR determines that it is not running inside a bash shell interpreter.
+.PP
+See also #BLIP_INTERNAL_FATAL_ACTION.
+.SS "\s-1BLIP_INTERNAL_FATAL_ACTION\s0"
+.IX Subsection "BLIP_INTERNAL_FATAL_ACTION"
+Specifies the command to execute when \f(CW\*(C`blip\*(C'\fR encounters a fatal internal
+condition such as being called by an incompatible foreign shell, or not meeting
+the minimum version requirements set by the \f(CW\*(C`BLIP_REQUIRE_VERSION\*(C'\fR variable.
+.PP
+Defaults to \f(CW\*(C`exit 2\*(C'\fR.
+.PP
+See also: #BLIP_REQUIRE_VERSION.
 .SS "\s-1BLIP_REQUIRE_VERSION\s0"
 .IX Subsection "BLIP_REQUIRE_VERSION"
 Specifies the minimum version of \fBblip\fR required by the calling parent script.

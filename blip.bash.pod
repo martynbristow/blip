@@ -160,7 +160,7 @@ through the following code example:
  source /usr/lib/blip.bash
  echo "${!ANSI[@]}"
 
-See also L<BLIP_ANSI_VARIABLES> in the L<ENVIRONMENT> section below.
+See also L<#BLIP_ANSI_VARIABLES> in the L<#ENVIRONMENT> section below.
 
 =head1 ENVIRONMENT
 
@@ -168,6 +168,18 @@ See also L<BLIP_ANSI_VARIABLES> in the L<ENVIRONMENT> section below.
 
 When set to C<1>, inhibits C<exit> functionality to abort operation
 when B<blip> determines that it is not running inside a bash shell interpreter.
+
+See also L<#BLIP_INTERNAL_FATAL_ACTION>.
+
+=head2 BLIP_INTERNAL_FATAL_ACTION
+
+Specifies the command to execute when C<blip> encounters a fatal internal
+condition such as being called by an incompatible foreign shell, or not meeting
+the minimum version requirements set by the C<BLIP_REQUIRE_VERSION> variable.
+
+Defaults to C<exit 2>.
+
+See also: L<#BLIP_REQUIRE_VERSION>.
 
 =head2 BLIP_REQUIRE_VERSION
 
