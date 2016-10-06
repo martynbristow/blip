@@ -61,11 +61,11 @@ RPMMACROS
     # Scan for missing documentation.
     local missing_func_docs=""
     while read function ; do
-        function="${function#* }"
+        function="${function%% *}"
         if ! grep -q "^=head2 $function " "$base/${pkg}.bash.pod" ; then
             missing_func_docs="${missing_func_docs:+$missing_func_docs }${function%% *}"
         fi
-    done < <(egrep -o '=head2 ^[a-z_]+\ \(\)' "$base/${pkg}.bash" | sort -u)
+    done < <(egrep -o '^[a-z_]+\ \(\)' "$base/${pkg}.bash" | sort -u)
 
     # Build tarball.
     rm -Rf --one-file-system --preserve-root "$build_base"
