@@ -209,6 +209,12 @@ code example:
 
 See also: L<https://en.wikipedia.org/wiki/ANSI_escape_code>.
 
+=head2 BLIP_EXTERNAL_CMD_FLOCK
+
+Specifies an explicit command path when executing the external dependency
+command C<flock>. Defaults to C<flock> without an explicit path in order to
+search C<$PATH>.
+
 =head2 BLIP_EXTERNAL_CMD_CURL
 
 Specifies an explicit command path when executing the external dependency
