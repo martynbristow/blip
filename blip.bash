@@ -67,9 +67,19 @@ fi
 
 # TODO(nicolaw): Work out how to automatically populate these values at build
 #                and release (packaging) time.
-declare -rg BLIP_VERSION="0.01-3-prerelease"
-declare -rga BLIP_VERSINFO=("0" "01" "3" "prerelease")
-if     [[ -n "${BLIP_REQUIRE_VERSION:-}" ]] ; then
+
+if [[ -z "${BLIP_VERSION:+defined}" ]] ; then
+    declare -rg BLIP_VERSION="0.01-3-prerelease"
+    declare -rga BLIP_VERSINFO=("0" "01" "3" "prerelease")
+else
+    echo "blip.bash version $BLIP_VERSION is already loaded." >&2
+    if ! [[ "$BLIP_VERSION" = "0.01-3-prerelease" ]] ; then
+        echo "Reloading conflicting versions of blip.bash over each" \
+            "other may result in unpredictable behaviour!" >&2
+    fi
+fi
+
+if [[ -n "${BLIP_REQUIRE_VERSION:-}" ]] ; then
     declare -a BLIP_REQUIRE_VERSINFO=(${BLIP_REQUIRE_VERSION//[-.]/ })
     if   [[ ${BLIP_REQUIRE_VERSINFO[0]:-} -gt ${BLIP_VERSINFO[0]} ]] \
       || [[ ${BLIP_REQUIRE_VERSINFO[1]:-} -gt ${BLIP_VERSINFO[1]} ]] \
@@ -78,13 +88,49 @@ if     [[ -n "${BLIP_REQUIRE_VERSION:-}" ]] ; then
              "required version $BLIP_REQUIRE_VERSION; exiting!" >&2
         exit 2
     fi
+    unset BLIP_REQUIRE_VERSIFO
 fi
 
 # Assign command names to run from $PATH unless otherwise already defined.
+BLIP_EXTERNAL_CMD_FLOCK="${BLIP_EXTERNAL_CMD_CURL:-flock}"
 BLIP_EXTERNAL_CMD_CURL="${BLIP_EXTERNAL_CMD_CURL:-curl}"
 BLIP_EXTERNAL_CMD_DATE="${BLIP_EXTERNAL_CMD_DATE:-date}"
 BLIP_EXTERNAL_CMD_GREP="${BLIP_EXTERNAL_CMD_GREP:-grep}"
 BLIP_EXTERNAL_CMD_EGREP="${BLIP_EXTERNAL_CMD_EGREP:-egrep}" # Remove this dependency!
+
+get_pid_lock_filename () {
+    local lock_path="${1:-}"
+    local base_name="${2:-$0}"
+    local tmp_dir="${TMPDIR:-/tmp}"
+
+    if [[ -z "$lock_path" ]] ; then
+        if [[ -w /var/run ]] ; then
+            lock_path="/var/run"
+        elif [[ -n "${tmp_dir:-}" ]] && [[ -w "$tmp_dir" ]] ; then
+            lock_path="$tmp_dir"
+        else
+            lock_path="${PWD:-./}"
+        fi
+    fi
+
+    base_name="${base_name##*/}"
+    if [[ "$base_name" =~ ([a-zA-Z0-9][a-zA-Z0-9_-]*) ]] ; then
+        echo -n "${lock_path%/}/${BASH_REMATCH[1]}.pid"
+    else
+        echo -n "${lock_path%/}/${base_name}.pid"
+    fi
+}
+
+get_exclusive_execution_lock () {
+    local pid_file="${1:get_pid_lock_filename}"
+    # Use prefered flock mechanism (probably under Linux).
+    if is_in_path "$BLIP_EXTERNAL_CMD_FLOCK" ; then
+        :
+    # Otherwise make do with mkdir method.
+    else
+        :
+    fi
+}
 
 # Return the length of the longest argument.
 get_max_length () {
@@ -361,7 +407,7 @@ get_file_age () {
 
 # Define ANSI colour code variables.
 # https://en.wikipedia.org/wiki/ANSI_escape_code
-if is_true "${BLIP_ANSI_VARIABLES:-}" ; then
+if is_true "${BLIP_ANSI_VARIABLES:-}" && [[ -z "${ANSI[@]+defined}" ]] ; then
     declare -rx ANSI_RESET="[0m"          #
 
     declare -rx ANSI_BLINK_SLOW="[5m"     #

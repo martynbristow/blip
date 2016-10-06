@@ -71,7 +71,7 @@
 .\" ========================================================================
 .\"
 .IX Title "BLIP.BASH 3"
-.TH BLIP.BASH 3 "2016-10-04" "blip.bash 0.01" "blip.bash"
+.TH BLIP.BASH 3 "2016-10-06" "blip.bash 0.01" "blip.bash"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -117,6 +117,11 @@ Please feel free to contact the author or offer patches to the source.
 Alias for \f(CW\*(C`abs ()\*(C'\fR.
 .SS "append_if_not_present ()"
 .IX Subsection "append_if_not_present ()"
+.ie n .SS "get_pid_lock_filename ""$LOCK_DIR"" ""$PID_FILENAME"""
+.el .SS "get_pid_lock_filename ``$LOCK_DIR'' ``$PID_FILENAME''"
+.IX Subsection "get_pid_lock_filename $LOCK_DIR $PID_FILENAME"
+.SS "get_exclusive_execution_lock ()"
+.IX Subsection "get_exclusive_execution_lock ()"
 .SS "get_date ()"
 .IX Subsection "get_date ()"
 .SS "get_file_age ()"

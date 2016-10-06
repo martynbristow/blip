@@ -44,6 +44,10 @@ Alias for C<abs ()>.
 
 =head2 append_if_not_present ()
 
+=head2 get_pid_lock_filename "$LOCK_DIR" "$PID_FILENAME"
+
+=head2 get_exclusive_execution_lock ()
+
 =head2 get_date ()
 
 =head2 get_file_age ()
