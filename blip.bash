@@ -104,6 +104,34 @@ BLIP_EXTERNAL_CMD_DATE="${BLIP_EXTERNAL_CMD_DATE:-date}"
 BLIP_EXTERNAL_CMD_GREP="${BLIP_EXTERNAL_CMD_GREP:-grep}"
 BLIP_EXTERNAL_CMD_EGREP="${BLIP_EXTERNAL_CMD_EGREP:-egrep}" # Remove this dependency!
 
+# Trap handler stacks.
+declare -ga BLIP_TRAP_HANDLERS=()
+declare -gA BLIP_TRAP_HANDLER_MAP=()
+
+execute_trap_handlers () {
+    :
+}
+
+push_trap_handler () {
+    :
+}
+
+pop_trap_handler () {
+    :
+}
+
+set_trap_handler () {
+    :
+}
+
+unset_trap_handler () {
+    :
+}
+
+get_trap_handler () {
+    :
+}
+
 get_pid_lock_filename () {
     local lock_path="${1:-}"
     local base_name="${2:-$0}"
