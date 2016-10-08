@@ -42,6 +42,20 @@ Please feel free to contact the author or offer patches to the source.
 
 Alias for C<abs ()>.
 
+=head2 append_trap "$ACTION" "$SIGNALn" ...
+
+=head2 execute_trap_stack "$SIGNAL"
+
+=head2 get_trap_stack "$SIGNALn" ...
+
+=head2 pop_trap_stack "$SIGNALn" ...
+
+=head2 push_trap_stack "$ACTION" "$SIGNALn" ...
+
+=head2 set_trap_stack "$ACTION" "$SIGNALn" ...
+
+=head2 unset_trap_stack "$SIGNALn" ...
+
 =head2 append_if_not_present ()
 
 =head2 get_pid_lock_filename "$LOCK_DIR" "$PID_FILENAME"
@@ -50,9 +64,9 @@ Alias for C<abs ()>.
 
 =head2 get_date ()
 
-=head2 get_file_age ()
+=head2 get_file_age "$FILE"
 
-=head2 get_free_disk_space ()
+=head2 get_free_disk_space "$FILESYSTEM"
 
 =head2 get_fs_mounts ()
 
@@ -84,7 +98,7 @@ Alias for C<is_abs_int ()>.
 
 =head2 is_boolean ()
 
-=head2 is_false ()
+=head2 is_false "$ARG1"
 
 Return C<0> I<true> if C<$ARG1> may be considered boolean false by a
 human. Values to be considered true include: C<0>, C<false>, C<no>, C<off>,

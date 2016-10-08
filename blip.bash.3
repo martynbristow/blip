@@ -71,7 +71,7 @@
 .\" ========================================================================
 .\"
 .IX Title "BLIP.BASH 3"
-.TH BLIP.BASH 3 "2016-10-06" "blip.bash 0.01" "blip.bash"
+.TH BLIP.BASH 3 "2016-10-08" "blip.bash 0.01" "blip.bash"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -115,6 +115,27 @@ Please feel free to contact the author or offer patches to the source.
 .SS "absolute ()"
 .IX Subsection "absolute ()"
 Alias for \f(CW\*(C`abs ()\*(C'\fR.
+.ie n .SS "append_trap ""$ACTION"" ""$SIGNALn"" ..."
+.el .SS "append_trap ``$ACTION'' ``$SIGNALn'' ..."
+.IX Subsection "append_trap $ACTION $SIGNALn ..."
+.ie n .SS "execute_trap_stack ""$SIGNAL"""
+.el .SS "execute_trap_stack ``$SIGNAL''"
+.IX Subsection "execute_trap_stack $SIGNAL"
+.ie n .SS "get_trap_stack ""$SIGNALn"" ..."
+.el .SS "get_trap_stack ``$SIGNALn'' ..."
+.IX Subsection "get_trap_stack $SIGNALn ..."
+.ie n .SS "pop_trap_stack ""$SIGNALn"" ..."
+.el .SS "pop_trap_stack ``$SIGNALn'' ..."
+.IX Subsection "pop_trap_stack $SIGNALn ..."
+.ie n .SS "push_trap_stack ""$ACTION"" ""$SIGNALn"" ..."
+.el .SS "push_trap_stack ``$ACTION'' ``$SIGNALn'' ..."
+.IX Subsection "push_trap_stack $ACTION $SIGNALn ..."
+.ie n .SS "set_trap_stack ""$ACTION"" ""$SIGNALn"" ..."
+.el .SS "set_trap_stack ``$ACTION'' ``$SIGNALn'' ..."
+.IX Subsection "set_trap_stack $ACTION $SIGNALn ..."
+.ie n .SS "unset_trap_stack ""$SIGNALn"" ..."
+.el .SS "unset_trap_stack ``$SIGNALn'' ..."
+.IX Subsection "unset_trap_stack $SIGNALn ..."
 .SS "append_if_not_present ()"
 .IX Subsection "append_if_not_present ()"
 .ie n .SS "get_pid_lock_filename ""$LOCK_DIR"" ""$PID_FILENAME"""
@@ -124,10 +145,12 @@ Alias for \f(CW\*(C`abs ()\*(C'\fR.
 .IX Subsection "get_exclusive_execution_lock ()"
 .SS "get_date ()"
 .IX Subsection "get_date ()"
-.SS "get_file_age ()"
-.IX Subsection "get_file_age ()"
-.SS "get_free_disk_space ()"
-.IX Subsection "get_free_disk_space ()"
+.ie n .SS "get_file_age ""$FILE"""
+.el .SS "get_file_age ``$FILE''"
+.IX Subsection "get_file_age $FILE"
+.ie n .SS "get_free_disk_space ""$FILESYSTEM"""
+.el .SS "get_free_disk_space ``$FILESYSTEM''"
+.IX Subsection "get_free_disk_space $FILESYSTEM"
 .SS "get_fs_mounts ()"
 .IX Subsection "get_fs_mounts ()"
 .SS "get_gecos_info ()"
@@ -155,8 +178,9 @@ See also: \f(CW\*(C`select\*(C'\fR bash built-in.
 Alias for \f(CW\*(C`is_abs_int ()\*(C'\fR.
 .SS "is_boolean ()"
 .IX Subsection "is_boolean ()"
-.SS "is_false ()"
-.IX Subsection "is_false ()"
+.ie n .SS "is_false ""$ARG1"""
+.el .SS "is_false ``$ARG1''"
+.IX Subsection "is_false $ARG1"
 Return \f(CW0\fR \fItrue\fR if \f(CW$ARG1\fR may be considered boolean false by a
 human. Values to be considered true include: \f(CW0\fR, \f(CW\*(C`false\*(C'\fR, \f(CW\*(C`no\*(C'\fR, \f(CW\*(C`off\*(C'\fR,
 \&\f(CW\*(C`disable\*(C'\fR and \f(CW\*(C`disabled\*(C'\fR.
