@@ -112,7 +112,7 @@ declare -gx BLIP_EXTERNAL_CMD_DATE="${BLIP_EXTERNAL_CMD_DATE:-date}"
 declare -gx BLIP_EXTERNAL_CMD_GREP="${BLIP_EXTERNAL_CMD_GREP:-grep}"
 declare -gx BLIP_EXTERNAL_CMD_EGREP="${BLIP_EXTERNAL_CMD_EGREP:-egrep}" # Remove this dependency!
 
-# Trap handler stacks.
+# Trap handler stack.
 declare -gxa BLIP_TRAP_STACK=()
 declare -gxA BLIP_TRAP_MAP=() # Maps BLIP_TRAP_STACK indexes to signals
 
@@ -140,7 +140,7 @@ append_trap () {
 }
 declare -ft append_trap
 
-execute_trap_handlers () {
+execute_trap_stack () {
     declare sig
     for sig in "$@" ; do
         if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
@@ -152,7 +152,7 @@ execute_trap_handlers () {
     done
 }
 
-push_trap_handler () {
+push_trap_stack () {
     declare -x action="${1:-}"; shift
     [[ -z "$action" ]] && return
 
@@ -172,8 +172,8 @@ push_trap_handler () {
             BLIP_TRAP_MAP[$sig]+=" $idx"
         else
             BLIP_TRAP_MAP[$sig]="$idx"
-            if ! [[ "$(trap -p "$sig")" =~ execute_trap_handlers\ $sig ]] ; then
-                append_trap "execute_trap_handlers $sig" "$sig"
+            if ! [[ "$(trap -p "$sig")" =~ execute_trap_stack\ $sig ]] ; then
+                append_trap "execute_trap_stack $sig" "$sig"
             fi
         fi
 
@@ -187,7 +187,7 @@ push_trap_handler () {
     done
 }
 
-pop_trap_handler () {
+pop_trap_stack () {
     declare sig
     for sig in "$@" ; do
         if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
@@ -209,18 +209,18 @@ pop_trap_handler () {
     done
 }
 
-set_trap_handler () {
+set_trap_stack () {
     declare -x action="${1:-}"; shift
     [[ -z "$action" ]] && return
 
     declare sig
     for sig in "$@" ; do
-        unset_trap_handler "$sig"
-        push_trap_handler "$action" "$sig"
+        unset_trap_stack "$sig"
+        push_trap_stack "$action" "$sig"
     done
 }
 
-unset_trap_handler () {
+unset_trap_stack () {
     declare sig
     for sig in "$@" ; do
         if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
@@ -233,7 +233,7 @@ unset_trap_handler () {
     done
 }
 
-get_trap_handler () {
+get_trap_stack () {
     declare sig
     for sig in "$@" ; do
         if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
