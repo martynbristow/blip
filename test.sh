@@ -7,8 +7,8 @@ set -euo pipefail
 
 BLIP_ANSI_VARIABLES=1
 BLIP_REQUIRE_VERSION="0.01-3"
-BLIP_DEBUG_LOGLEVEL=3
 source blip.bash
+BLIP_DEBUG_LOGLEVEL=3
 
 compgen -A variable | grep ANSI
 echo "${!ANSI[@]}"
@@ -17,8 +17,16 @@ echo "${ANSI[blink]}${ANSI[bg_white]}${ANSI[bold]}${ANSI[red]}${ANSI[underline]}
 
 push_trap_handler "echo 'hello world'" INT
 push_trap_handler "echo 'foo bar'" INT HUP
-push_trap_handler "echo 'this will not appear'" INT
+push_trap_handler "echo 'this will not appear'" INT HUP
 pop_trap_handler INT
+get_trap_handler INT
+set_trap_handler "echo 'woop woop'" INT
+get_trap_handler INT
+get_trap_handler HUP
+unset_trap_handler HUP
+get_trap_handler HUP
+push_trap_handler 'for ((x=0; x<=10; x++)) ; do echo " >> x=$x << "; done' INT HUP
+push_trap_handler "echo 'The final countdown.'" INT
 
 for ((i=0; i<=10; i++)); do
     echo "$i"

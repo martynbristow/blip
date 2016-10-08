@@ -113,8 +113,18 @@ declare -gx BLIP_EXTERNAL_CMD_GREP="${BLIP_EXTERNAL_CMD_GREP:-grep}"
 declare -gx BLIP_EXTERNAL_CMD_EGREP="${BLIP_EXTERNAL_CMD_EGREP:-egrep}" # Remove this dependency!
 
 # Trap handler stacks.
-declare -gxa BLIP_TRAP_HANDLERS=()
-declare -gxA BLIP_TRAP_HANDLER_MAP=()
+declare -gxa BLIP_TRAP_STACK=()
+declare -gxA BLIP_TRAP_MAP=() # Maps BLIP_TRAP_STACK indexes to signals
+
+# The following may or may not offer a better solution. I should read it in
+# detail to find out if I should rewrite what I've already done or not. At
+# first glance it looks concise, but there's a fair few evals and it doesn't
+# look set -u friendly.
+# Either way, I like the idea of being able to prepend as well as just being
+# able to append (push) handlers on and off the stack. I need to implement
+# that functionality too! I may need to rethink the names of my functions
+# though.
+# http://stackoverflow.com/questions/16115144/bash-save-and-restore-trap-state-easy-way-to-manage-multiple-handlers-for-trap
 
 append_trap () {
     declare -x action="${1:-}"; shift
@@ -131,7 +141,15 @@ append_trap () {
 declare -ft append_trap
 
 execute_trap_handlers () {
-    echo "execute_trap_handlers $@"
+    declare sig
+    for sig in "$@" ; do
+        if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
+            declare -i idx
+            for idx in ${BLIP_TRAP_MAP[$sig]} ; do
+                eval "${BLIP_TRAP_STACK[$idx]}"
+            done
+        fi 
+    done
 }
 
 push_trap_handler () {
@@ -140,30 +158,30 @@ push_trap_handler () {
 
     declare sig
     for sig in "$@" ; do
-        declare -ix idx="${#BLIP_TRAP_HANDLERS[@]}"
+        declare -ix idx="${#BLIP_TRAP_STACK[@]}"
         declare -i i
-        for ((i = 0; i < ${#BLIP_TRAP_HANDLERS[@]}; i++)) ; do
-            if [[ -z "${BLIP_TRAP_HANDLERS[$i]:-}" ]] ; then
+        for ((i = 0; i < ${#BLIP_TRAP_STACK[@]}; i++)) ; do
+            if [[ -z "${BLIP_TRAP_STACK[$i]:-}" ]] ; then
                 idx=$i
                 break
             fi
         done
 
-        BLIP_TRAP_HANDLERS[$idx]=$action
-        if [[ -n "${BLIP_TRAP_HANDLER_MAP[$sig]:+defined}" ]] ; then
-            BLIP_TRAP_HANDLER_MAP[$sig]+=" $idx"
+        BLIP_TRAP_STACK[$idx]=$action
+        if [[ -n "${BLIP_TRAP_MAP[$sig]:+defined}" ]] ; then
+            BLIP_TRAP_MAP[$sig]+=" $idx"
         else
-            BLIP_TRAP_HANDLER_MAP[$sig]="$idx"
+            BLIP_TRAP_MAP[$sig]="$idx"
             if ! [[ "$(trap -p "$sig")" =~ execute_trap_handlers\ $sig ]] ; then
                 append_trap "execute_trap_handlers $sig" "$sig"
             fi
         fi
 
         if [[ $BLIP_DEBUG_LOGLEVEL -ge 1 ]] ; then
-            for ((i = 0; i < ${#BLIP_TRAP_HANDLERS[@]}; i++)) ; do
-                echo "\$BLIP_TRAP_HANDLERS[$i]=${BLIP_TRAP_HANDLERS[$i]}"
+            for ((i = 0; i < ${#BLIP_TRAP_STACK[@]}; i++)) ; do
+                echo "\$BLIP_TRAP_STACK[$i]=${BLIP_TRAP_STACK[$i]:-}"
             done
-            echo "\$BLIP_TRAP_HANDLER_MAP[$sig]=${BLIP_TRAP_HANDLER_MAP[$sig]}"
+            echo "\$BLIP_TRAP_MAP[$sig]=${BLIP_TRAP_MAP[$sig]:-}"
         fi
         [[ $BLIP_DEBUG_LOGLEVEL -ge 3 ]] && trap -p "$sig" || true
     done
@@ -172,19 +190,19 @@ push_trap_handler () {
 pop_trap_handler () {
     declare sig
     for sig in "$@" ; do
-        if [[ -n "${BLIP_TRAP_HANDLER_MAP[$sig]:-}" ]] ; then
-            declare -ax map=(${BLIP_TRAP_HANDLER_MAP[$sig]})
+        if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
+            declare -ax map=(${BLIP_TRAP_MAP[$sig]})
             declare -ix idx=${map[-1]}
-            BLIP_TRAP_HANDLERS[$idx]=""
+            BLIP_TRAP_STACK[$idx]=""
             unset map[${#map[@]}-1]
-            BLIP_TRAP_HANDLER_MAP[$sig]="${map[@]}"
+            BLIP_TRAP_MAP[$sig]="${map[@]}"
         fi 
 
         if [[ $BLIP_DEBUG_LOGLEVEL -ge 1 ]] ; then
-            echo "\$BLIP_TRAP_HANDLER_MAP[$sig]=${BLIP_TRAP_HANDLER_MAP[$sig]}"
+            echo "\$BLIP_TRAP_MAP[$sig]=${BLIP_TRAP_MAP[$sig]:-}"
             declare -i i
-            for ((i = 0; i < ${#BLIP_TRAP_HANDLERS[@]}; i++)) ; do
-                echo "\$BLIP_TRAP_HANDLERS[$i]=${BLIP_TRAP_HANDLERS[$i]}"
+            for ((i = 0; i < ${#BLIP_TRAP_STACK[@]}; i++)) ; do
+                echo "\$BLIP_TRAP_STACK[$i]=${BLIP_TRAP_STACK[$i]:-}"
             done
         fi
         [[ $BLIP_DEBUG_LOGLEVEL -ge 3 ]] && trap -p "$sig" || true
@@ -192,15 +210,41 @@ pop_trap_handler () {
 }
 
 set_trap_handler () {
-    :
+    declare -x action="${1:-}"; shift
+    [[ -z "$action" ]] && return
+
+    declare sig
+    for sig in "$@" ; do
+        unset_trap_handler "$sig"
+        push_trap_handler "$action" "$sig"
+    done
 }
 
 unset_trap_handler () {
-    :
+    declare sig
+    for sig in "$@" ; do
+        if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
+            declare -i idx
+            for idx in ${BLIP_TRAP_MAP[$sig]} ; do
+                BLIP_TRAP_STACK[$idx]=""
+            done
+            unset BLIP_TRAP_MAP[$sig]
+        fi 
+    done
 }
 
 get_trap_handler () {
-    :
+    declare sig
+    for sig in "$@" ; do
+        if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
+            declare -i idx
+            for idx in ${BLIP_TRAP_MAP[$sig]} ; do
+                if [[ -n "${BLIP_TRAP_STACK[$idx]:-}" ]] ; then
+                    printf '%s\n' "${BLIP_TRAP_STACK[$idx]:-}"
+                fi
+            done
+        fi 
+    done
 }
 
 get_pid_lock_filename () {
