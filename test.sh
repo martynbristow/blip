@@ -28,10 +28,12 @@ get_trap_handler HUP
 push_trap_handler 'for ((x=0; x<=10; x++)) ; do echo " >> x=$x << "; done' INT HUP
 push_trap_handler "echo 'The final countdown.'" INT
 
+echo "${ANSI[bold]}${ANSI[cyan]}Try pressing Control-C to trigger a SIGINT trap handler stack.${ANSI[reset]}"
 for ((i=0; i<=10; i++)); do
     echo "$i"
     sleep 1
 done
+echo "${ANSI[bold]}${ANSI[red]}Too late; better luck next time!${ANSI[reset]}"
 
 rc_to_colour () {
     if [[ ${1:-} -eq 0 ]] ; then
