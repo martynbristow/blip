@@ -7,12 +7,23 @@ set -euo pipefail
 
 BLIP_ANSI_VARIABLES=1
 BLIP_REQUIRE_VERSION="0.01-3"
+BLIP_DEBUG_LOGLEVEL=3
 source blip.bash
 
-echo "${ANSI_FG_YELLOW}${ANSI_BOLD_ON}Hello world.${ANSI_RESET}"
-echo "${ANSI[blink]}${ANSI[bg_white]}${ANSI[bold]}${ANSI[red]}${ANSI[underline]}Hello world.${ANSI[reset]}"
 compgen -A variable | grep ANSI
 echo "${!ANSI[@]}"
+echo "${ANSI_FG_YELLOW}${ANSI_BOLD_ON}Hello world.${ANSI_RESET}"
+echo "${ANSI[blink]}${ANSI[bg_white]}${ANSI[bold]}${ANSI[red]}${ANSI[underline]}Hello world.${ANSI[reset]}"
+
+push_trap_handler "echo 'hello world'" INT
+push_trap_handler "echo 'foo bar'" INT HUP
+push_trap_handler "echo 'this will not appear'" INT
+pop_trap_handler INT
+
+for ((i=0; i<=10; i++)); do
+    echo "$i"
+    sleep 1
+done
 
 rc_to_colour () {
     if [[ ${1:-} -eq 0 ]] ; then

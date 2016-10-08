@@ -75,8 +75,8 @@ fi
 #                and release (packaging) time.
 
 if [[ -z "${BLIP_VERSION:+defined}" ]] ; then
-    declare -rg BLIP_VERSION="0.01-3-prerelease"
-    declare -rga BLIP_VERSINFO=("0" "01" "3" "prerelease")
+    declare -rxg BLIP_VERSION="0.01-3-prerelease"
+    declare -rxga BLIP_VERSINFO=("0" "01" "3" "prerelease")
 else
     echo "blip.bash version $BLIP_VERSION is already loaded." >&2
     if ! [[ "$BLIP_VERSION" = "0.01-3-prerelease" ]] ; then
@@ -85,8 +85,16 @@ else
     fi
 fi
 
+# This is only used internally if you want to debug something. It allows
+# printing of some useful messages in the more complex functions like
+# trap handlers.
+declare -igx BLIP_DEBUG_LOGLEVEL=${BLIP_DEBUG_LOGLEVEL:-0}
+if ! is_integer "$BLIP_DEBUG_LOGLEVEL" ; then
+    BLIP_DEBUG_LOGLEVEL=0
+fi
+
 if [[ -n "${BLIP_REQUIRE_VERSION:-}" ]] ; then
-    declare -a BLIP_REQUIRE_VERSINFO=(${BLIP_REQUIRE_VERSION//[-.]/ })
+    declare -ax BLIP_REQUIRE_VERSINFO=(${BLIP_REQUIRE_VERSION//[-.]/ })
     if   [[ ${BLIP_REQUIRE_VERSINFO[0]:-} -gt ${BLIP_VERSINFO[0]} ]] \
       || [[ ${BLIP_REQUIRE_VERSINFO[1]:-} -gt ${BLIP_VERSINFO[1]} ]] \
       || [[ ${BLIP_REQUIRE_VERSINFO[2]:-} -gt ${BLIP_VERSINFO[2]} ]] ; then
@@ -98,26 +106,89 @@ if [[ -n "${BLIP_REQUIRE_VERSION:-}" ]] ; then
 fi
 
 # Assign command names to run from $PATH unless otherwise already defined.
-BLIP_EXTERNAL_CMD_FLOCK="${BLIP_EXTERNAL_CMD_CURL:-flock}"
-BLIP_EXTERNAL_CMD_CURL="${BLIP_EXTERNAL_CMD_CURL:-curl}"
-BLIP_EXTERNAL_CMD_DATE="${BLIP_EXTERNAL_CMD_DATE:-date}"
-BLIP_EXTERNAL_CMD_GREP="${BLIP_EXTERNAL_CMD_GREP:-grep}"
-BLIP_EXTERNAL_CMD_EGREP="${BLIP_EXTERNAL_CMD_EGREP:-egrep}" # Remove this dependency!
+declare -gx BLIP_EXTERNAL_CMD_FLOCK="${BLIP_EXTERNAL_CMD_CURL:-flock}"
+declare -gx BLIP_EXTERNAL_CMD_CURL="${BLIP_EXTERNAL_CMD_CURL:-curl}"
+declare -gx BLIP_EXTERNAL_CMD_DATE="${BLIP_EXTERNAL_CMD_DATE:-date}"
+declare -gx BLIP_EXTERNAL_CMD_GREP="${BLIP_EXTERNAL_CMD_GREP:-grep}"
+declare -gx BLIP_EXTERNAL_CMD_EGREP="${BLIP_EXTERNAL_CMD_EGREP:-egrep}" # Remove this dependency!
 
 # Trap handler stacks.
-declare -ga BLIP_TRAP_HANDLERS=()
-declare -gA BLIP_TRAP_HANDLER_MAP=()
+declare -gxa BLIP_TRAP_HANDLERS=()
+declare -gxA BLIP_TRAP_HANDLER_MAP=()
+
+append_trap () {
+    declare -x action="${1:-}"; shift
+    [[ -z "$action" ]] && return
+    declare sig
+    for sig in "$@" ; do
+        trap -- "$(
+                _get_existing_action() { printf "%s${3+\n}" "${3:-}"; }
+                eval "_get_existing_action $(trap -p "$sig")"
+                printf '%s\n' "$action"
+            )" "$sig"
+    done
+}
+declare -ft append_trap
 
 execute_trap_handlers () {
-    :
+    echo "execute_trap_handlers $@"
 }
 
 push_trap_handler () {
-    :
+    declare -x action="${1:-}"; shift
+    [[ -z "$action" ]] && return
+
+    declare sig
+    for sig in "$@" ; do
+        declare -ix idx="${#BLIP_TRAP_HANDLERS[@]}"
+        declare -i i
+        for ((i = 0; i < ${#BLIP_TRAP_HANDLERS[@]}; i++)) ; do
+            if [[ -z "${BLIP_TRAP_HANDLERS[$i]:-}" ]] ; then
+                idx=$i
+                break
+            fi
+        done
+
+        BLIP_TRAP_HANDLERS[$idx]=$action
+        if [[ -n "${BLIP_TRAP_HANDLER_MAP[$sig]:+defined}" ]] ; then
+            BLIP_TRAP_HANDLER_MAP[$sig]+=" $idx"
+        else
+            BLIP_TRAP_HANDLER_MAP[$sig]="$idx"
+            if ! [[ "$(trap -p "$sig")" =~ execute_trap_handlers\ $sig ]] ; then
+                append_trap "execute_trap_handlers $sig" "$sig"
+            fi
+        fi
+
+        if [[ $BLIP_DEBUG_LOGLEVEL -ge 1 ]] ; then
+            for ((i = 0; i < ${#BLIP_TRAP_HANDLERS[@]}; i++)) ; do
+                echo "\$BLIP_TRAP_HANDLERS[$i]=${BLIP_TRAP_HANDLERS[$i]}"
+            done
+            echo "\$BLIP_TRAP_HANDLER_MAP[$sig]=${BLIP_TRAP_HANDLER_MAP[$sig]}"
+        fi
+        [[ $BLIP_DEBUG_LOGLEVEL -ge 3 ]] && trap -p "$sig" || true
+    done
 }
 
 pop_trap_handler () {
-    :
+    declare sig
+    for sig in "$@" ; do
+        if [[ -n "${BLIP_TRAP_HANDLER_MAP[$sig]:-}" ]] ; then
+            declare -ax map=(${BLIP_TRAP_HANDLER_MAP[$sig]})
+            declare -ix idx=${map[-1]}
+            BLIP_TRAP_HANDLERS[$idx]=""
+            unset map[${#map[@]}-1]
+            BLIP_TRAP_HANDLER_MAP[$sig]="${map[@]}"
+        fi 
+
+        if [[ $BLIP_DEBUG_LOGLEVEL -ge 1 ]] ; then
+            echo "\$BLIP_TRAP_HANDLER_MAP[$sig]=${BLIP_TRAP_HANDLER_MAP[$sig]}"
+            declare -i i
+            for ((i = 0; i < ${#BLIP_TRAP_HANDLERS[@]}; i++)) ; do
+                echo "\$BLIP_TRAP_HANDLERS[$i]=${BLIP_TRAP_HANDLERS[$i]}"
+            done
+        fi
+        [[ $BLIP_DEBUG_LOGLEVEL -ge 3 ]] && trap -p "$sig" || true
+    done
 }
 
 set_trap_handler () {
@@ -133,9 +204,9 @@ get_trap_handler () {
 }
 
 get_pid_lock_filename () {
-    local lock_path="${1:-}"
-    local base_name="${2:-$0}"
-    local tmp_dir="${TMPDIR:-/tmp}"
+    declare -x lock_path="${1:-}"
+    declare -x base_name="${2:-$0}"
+    declare -x tmp_dir="${TMPDIR:-/tmp}"
 
     if [[ -z "$lock_path" ]] ; then
         if [[ -w /var/run ]] ; then
@@ -156,7 +227,7 @@ get_pid_lock_filename () {
 }
 
 get_exclusive_execution_lock () {
-    local pid_file="${1:get_pid_lock_filename}"
+    declare -x pid_file="${1:get_pid_lock_filename}"
     # Use prefered flock mechanism (probably under Linux).
     if is_in_path "$BLIP_EXTERNAL_CMD_FLOCK" ; then
         :
@@ -168,7 +239,7 @@ get_exclusive_execution_lock () {
 
 # Return the length of the longest argument.
 get_max_length () {
-    local max=0
+    declare -ix max=0
     for arg in "$@" ; do
         if [[ ${#arg} -gt $max ]] ; then
             max="${#arg}"
@@ -178,8 +249,8 @@ get_max_length () {
 }
 
 get_string_characters () {
-    local string="${1:-}"
-    local -i i=0
+    declare -x string="${1:-}"
+    declare -i i
     for (( i=0; i<${#string}; i++ )); do
       echo "${string:$i:1}"
     done
@@ -196,16 +267,16 @@ get_string_characters () {
 # Ask the user for confirmation, expecting a single character y or n reponse.
 # Returns 0 when selecting y, 1 when selecting n.
 get_user_confirmation () {
-    local question="${1:-Are you sure?}"
-    local default_response="${2:-}"
+    declare -x question="${1:-Are you sure?}"
+    declare -x default_response="${2:-}"
     get_user_selection "$question" "$default_response" "y" "n"
 }
 
 # See also: bash's "select" built-in.
 get_user_selection () {
-    local question="${1:-Make a selection }"; shift
-    local default_response="${1:-}"; shift
-    local max_response_length="$(get_max_length "$@")"
+    declare -x question="${1:-Make a selection }"; shift
+    declare -x default_response="${1:-}"; shift
+    declare -ix max_response_length="$(get_max_length "$@")"
 
     # Replace with a standard argument validation routine.
     # http://tldp.org/LDP/abs/html/exitcodes.html
@@ -215,7 +286,8 @@ get_user_selection () {
         return 126
     fi
 
-    local prompt=""
+    declare -x prompt=""
+    declare arg
     for arg in "$@" ; do
         if [[ "$arg" = "$default_response" ]] ; then
             arg="*$arg"
@@ -223,13 +295,13 @@ get_user_selection () {
         prompt="${prompt:+$prompt|}$arg"
     done
 
-    local input=""
+    declare -x input=""
     while read -n 1 -e -r -p "${question}${prompt:+ [$prompt]: }" input ; do
         if [[ -z "$input" ]] ; then
             input="$default_response"
         fi
 
-        local -i rc=0
+        declare -ix rc=0
         for valid_response in "$@" ; do
             if [[ "$input" = "$valid_response" ]] ; then
                 return $rc
@@ -246,8 +318,8 @@ get_iso8601_date () { get_date "%Y-%m-%d" "$@"; }
 get_unixtime () { get_date "%s" "$@"; }
 
 get_date () {
-    local format="${1:-%a %b %d %H:%M:%S %Z %Y}"
-    local when="${2:--1}"
+    declare -x format="${1:-%a %b %d %H:%M:%S %Z %Y}"
+    declare -x when="${2:--1}"
     if [[ ${BASH_VERSINFO[0]} -ge 4 && ${BASH_VERSINFO[1]} -ge 2 ]] ; then
         printf "%($format)T\n" $when
     else
@@ -267,7 +339,7 @@ url_http_response_code () {
 }
 
 url_exists () {
-    local url="$1"
+    declare -x url="$1"
     if [[ "$url" =~ ^file:// ]] ; then
         $BLIP_EXTERNAL_CMD_CURL -s -I "$url" -o /dev/null 2>/dev/null
     else
@@ -277,7 +349,7 @@ url_exists () {
 }
 
 is_in_path () {
-    local cmd
+    declare -x cmd
     for cmd in "$@" ; do
         if ! type -P "$cmd" >/dev/null 2>&1 ; then
              return 1
@@ -287,13 +359,13 @@ is_in_path () {
 }
 
 is_ipv4_address () {
-    local regex='(?<![0-9])(?:(?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]))(?![0-9])'
+    declare -x regex='(?<![0-9])(?:(?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]))(?![0-9])'
     $BLIP_EXTERNAL_CMD_GREP -Pq "^$regex$" <<< "${1:-}"
 }
 
 is_ipv4_prefix () {
-    local ip="${1%%/*}"
-    local prefix="${1##*/}"
+    declare -x ip="${1%%/*}"
+    declare -x prefix="${1##*/}"
     if is_ipv4_address "$ip" && is_integer "$prefix" &&
         [[ $prefix -ge 0 ]] && [[ $prefix -le 32 ]] ; then
         return 0
@@ -302,13 +374,13 @@ is_ipv4_prefix () {
 }
 
 is_ipv6_address () {
-    local regex='((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?'
+    declare -x regex='((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?'
     $BLIP_EXTERNAL_CMD_GREP -Pq "^$regex$" <<< "${1:-}"
 }
 
 is_ipv6_prefix () {
-    local ip="${1%%/*}"
-    local prefix="${1##*/}"
+    declare -x ip="${1%%/*}"
+    declare -x prefix="${1##*/}"
     if is_ipv6_address "$ip" && is_integer "$prefix" &&
         [[ $prefix -ge 0 ]] && [[ $prefix -le 128 ]] ; then
         return 0
@@ -325,7 +397,7 @@ get_free_disk_space () {
 }
 
 get_username () {
-    local user="${USER:-$LOGNAME}"
+    declare -x user="${USER:-$LOGNAME}"
     user="${user:-$(id -un)}"
     echo "${user:-$(whoami)}"
 }
@@ -336,8 +408,8 @@ get_gecos_name () {
 
 # https://en.wikipedia.org/wiki/Gecos_field
 get_gecos_info () {
-    local key="${1:-}"
-    local user="${2:-$(get_username)}"
+    declare -x key="${1:-}"
+    declare -x user="${2:-$(get_username)}"
     while IFS=: read username passwd uid gid gecos home shell ; do
         if [[ "$user" = "$username" ]] ; then
             if [[ -n "$key" ]] && [[ "$gecos" =~ ([,;]) ]] ; then
@@ -401,8 +473,8 @@ to_lower () {
 # TODO: Should this be extended to have is_word_in_strings, and/or
 #       is/are_words_in_string variants? Would that be overkill?
 is_word_in_string () {
-    local str="${1:-}"
-    local re="\\b${2:-}\\b"
+    declare -x str="${1:-}"
+    declare -x re="\\b${2:-}\\b"
     [[ "$str" =~ $re ]] && return 0
     return 1
 }
@@ -410,7 +482,7 @@ is_word_in_string () {
 # Append a list of word(s) to argument1 if they are not already present as
 # distinct words.
 append_if_not_present () {
-    local base_str="${1:-}"; shift
+    declare -x base_str="${1:-}"; shift
     for add_str in "$@" ; do
         if ! matches_word "$base_str" "$add_str" ; then
             base_str="${base_str} ${add_str}"
@@ -421,7 +493,7 @@ append_if_not_present () {
 
 # Returns all mount points, optionally filtered by device.
 get_fs_mounts () {
-    local device
+    declare device
     [[ -z "${1:-}" ]] || device=$(readlink -f "${1}")
     while IFS=" " read -r source target rest; do
         # Need echo -e to unescape source/target.
