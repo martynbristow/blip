@@ -89,7 +89,7 @@ fi
 # printing of some useful messages in the more complex functions like
 # trap handlers.
 declare -igx BLIP_DEBUG_LOGLEVEL=${BLIP_DEBUG_LOGLEVEL:-0}
-if ! is_integer "$BLIP_DEBUG_LOGLEVEL" ; then
+if ! is_int "$BLIP_DEBUG_LOGLEVEL" ; then
     BLIP_DEBUG_LOGLEVEL=0
 fi
 
@@ -410,7 +410,7 @@ is_ipv4_address () {
 is_ipv4_prefix () {
     declare -x ip="${1%%/*}"
     declare -x prefix="${1##*/}"
-    if is_ipv4_address "$ip" && is_integer "$prefix" &&
+    if is_ipv4_address "$ip" && is_int "$prefix" &&
         [[ $prefix -ge 0 ]] && [[ $prefix -le 32 ]] ; then
         return 0
     fi
@@ -425,7 +425,7 @@ is_ipv6_address () {
 is_ipv6_prefix () {
     declare -x ip="${1%%/*}"
     declare -x prefix="${1##*/}"
-    if is_ipv6_address "$ip" && is_integer "$prefix" &&
+    if is_ipv6_address "$ip" && is_int "$prefix" &&
         [[ $prefix -ge 0 ]] && [[ $prefix -le 128 ]] ; then
         return 0
     fi
@@ -434,7 +434,7 @@ is_ipv6_prefix () {
 
 get_free_disk_space () {
     while read -r _ blocks _ ; do
-        if is_integer "$blocks" ; then
+        if is_int "$blocks" ; then
             echo "$(( blocks * 1000 ))"
         fi
     done < <(df -kP "$1")
