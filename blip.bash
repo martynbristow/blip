@@ -435,7 +435,7 @@ is_ipv6_prefix () {
 get_free_disk_space () {
     while read -r _ blocks _ ; do
         if is_int "$blocks" ; then
-            echo "$(( blocks * 1000 ))"
+            echo "$(( blocks * 1024 ))"
         fi
     done < <(df -kP "$1")
 }
