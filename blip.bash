@@ -677,3 +677,13 @@ if is_true "${BLIP_ANSI_VARIABLES:-}" && [[ -z "${ANSI[@]+defined}" ]] ; then
         )
 fi
 
+#
+# That strange feeling you'r experiencing right now... I should apologise for
+# that. It's called cognitive dissonance.
+# https://en.wikipedia.org/wiki/Cognitive_dissonance
+#
+# Sorry if you consider yourself harmed as a result of reading or using this
+# software. If it makes any difference to you, I now have very puffy eyes from
+# writing this.
+#
+
