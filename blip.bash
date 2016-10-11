@@ -85,6 +85,10 @@ else
     fi
 fi
 
+# Evaulates if single argument input is an integer.
+is_int () { [[ "${1:-}" =~ ^-?[0-9]+$ ]]; }
+is_integer () { is_int "$@"; }
+
 # This is only used internally if you want to debug something. It allows
 # printing of some useful messages in the more complex functions like
 # trap handlers.
@@ -355,11 +359,28 @@ get_user_selection () {
     done
 }
 
+# Store the time that bash started (or a close enough aproximation assuming
+# that nobody has modified $SECONDS if we're using an older version of bash).
+if ! [[ -n "${BLIP_START_UNIXTIME+defined}" ]] ; then
+    if [[ ${BASH_VERSINFO[0]} -ge 4 && ${BASH_VERSINFO[1]} -ge 2 ]] ; then
+        declare -xrgi BLIP_START_UNIXTIME="$(printf "%(%s)T" -2)"
+    else
+        declare -xrgi BLIP_START_UNIXTIME="$(( $(date +"%s") - $SECONDS ))"
+    fi
+fi
+
 # https://en.wikipedia.org/wiki/ISO_8601
 get_iso8601_date () { get_date "%Y-%m-%d" "$@"; }
 
 # Return the time since the epoch in seconds.
 get_unixtime () { get_date "%s" "$@"; }
+
+# This is pretty pointless (just use $SECONDS right?).
+#if [[ ${BASH_VERSINFO[0]} -ge 4 && ${BASH_VERSINFO[1]} -ge 2 ]] ; then
+#get_runtime_seconds () {
+#    echo -n $(( $(get_unixtime -1) - $(get_unixtime -2) ))
+#}
+#fi
 
 get_date () {
     declare -x format="${1:-%a %b %d %H:%M:%S %Z %Y}"
@@ -369,6 +390,8 @@ get_date () {
     else
         if [[ "$when" = "-1" ]] ; then
             when=""
+        elif [[ "$when" = "-2" ]] ; then
+            when="@${BLIP_START_UNIXTIME}"
         fi
         $BLIP_EXTERNAL_CMD_DATE ${when:+-d "$when"} +%s
     fi
@@ -477,10 +500,6 @@ get_gecos_info () {
 is_true () { [[ "${1:-}" =~ ^yes|on|enabled?|true|1$ ]]; }
 is_false () { [[ "${1:-}" =~ ^no|off|disabled?|false|0$ ]]; }
 is_boolean () { is_true "$@" || is_false "$@"; }
-
-# Evaulates if single argument input is an integer.
-is_int () { [[ "${1:-}" =~ ^-?[0-9]+$ ]]; }
-is_integer () { is_int "$@"; }
 
 # Evaluates if single argument input is an absolute integer.
 is_abs_int () { [[ "${1:-}" =~ ^[0-9]+$ ]]; }
