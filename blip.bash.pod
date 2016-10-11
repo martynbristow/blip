@@ -263,6 +263,8 @@ L<https://nicolaw.uk/blip>, L<https://github.com/neechbear/blip/>
 
 =head1 SEE ALSO
 
+/usr/share/doc/blip, bash(1).
+
 <https://github.com/akesterson/cmdarg> - A pure bash library to
 make argument parsing far less troublesome.
 
