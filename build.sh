@@ -8,7 +8,7 @@
 # https://nicolaw.uk/DebianPackaging
 # http://www.rpm.org/max-rpm/s1-rpm-pgp-signing-packages.html
 
-set -euxo pipefail
+set -vxueo pipefail
 umask 0077
 
 main () {
@@ -57,6 +57,12 @@ RPMMACROS
         --center="${pkg}.bash" \
         --section=3 \
         --utf8 "$base/${pkg}.bash.pod" > "$base/${pkg}.bash.3"
+
+    if is_in_path "markdown" ; then
+        markdown "$base/README.md"
+    else
+        echo "Missing 'markdown' package is required to build README.html from README.md."
+    fi > "$base/README.html"
 
     # Scan for missing documentation.
     local missing_func_docs=""
