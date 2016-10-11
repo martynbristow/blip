@@ -1,6 +1,12 @@
 #!/bin/bash
 
-source blip.bash
+if [[ -r blip.bash ]] ; then
+    source blip.bash
+elif [[ -r "${BASH_SOURCE[0]%/*}/../blip.bash" ]] ; then
+    source "${BASH_SOURCE[0]%/*}/../blip.bash"
+else
+    source /usr/lib/blip.bash
+fi
 
 counter () {
   declare -i i
@@ -15,5 +21,5 @@ echo "Hello world!"
 counter "$@"
 
 declare -x foo="BAR MEH BLERG"
-echo "Woop ${foo##* }!"
+echo "Woop ${foo##* } ${BLIP_START_UNIXTIME}!"
 

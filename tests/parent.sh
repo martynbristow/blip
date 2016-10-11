@@ -8,5 +8,5 @@ for arg in "$@" ; do
     fi
 done
 
-source child.sh
+source "${BASH_SOURCE[0]%/*}/child.sh"
 
