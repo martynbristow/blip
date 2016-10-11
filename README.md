@@ -6,11 +6,11 @@ Unfortunately, due to the fact that Bash doesn't particularly lend itself to reu
 
 _"But what about the lazy sysadmin that needs to write a script, where Bash genuinely is the most appropriate option?"_, I hear you ask! Well, by providing functions for many common tasks, I'm hoping that `blip` will help fill some of the gaps for those situations.
 
-```bash
+```
 source /usr/lib/blip.bash
 ```
 
-Please see the man page `man blip.bash` or [bash.pod for full documentation](blip.bash.pod).
+Please see the man page `man blip.bash`, [bash.pod for full documentation](blip.bash.pod) or `/usr/share/doc/blip` directory for code examples and other useful information.
 
 * https://nicolaw.uk/blip
 * https://github.com/neechbear/blip/
