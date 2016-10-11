@@ -1,7 +1,10 @@
-blip (0.01-3) UNRELEASED; urgency=low
+blip (0.1-3) UNRELEASED; urgency=low
 
   * Added BLIP_VERSION and BLIP_VERSINFO variables.
+  * Added ANSI terminal colour code variables.
   * Added license agreement to header comments.
+  * Added trap stack handlers.
+  * Added /usr/share/doc/blip-bash examples.
   * Other minor changes.
 
  --  Nicola Worthington <nicolaw@tfb.net>  Mon, 03 Oct 2016 20:10:00 +0100
