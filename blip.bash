@@ -75,11 +75,11 @@ fi
 #                and release (packaging) time.
 
 if [[ -z "${BLIP_VERSION:+defined}" ]] ; then
-    declare -rxg BLIP_VERSION="0.01-3-prerelease"
-    declare -rxga BLIP_VERSINFO=("0" "01" "3" "prerelease")
+    declare -rxg BLIP_VERSION="0.1-4-prerelease"
+    declare -rxga BLIP_VERSINFO=("0" "1" "4" "prerelease")
 else
     echo "blip.bash version $BLIP_VERSION is already loaded." >&2
-    if ! [[ "$BLIP_VERSION" = "0.01-3-prerelease" ]] ; then
+    if ! [[ "$BLIP_VERSION" = "0.1-4-prerelease" ]] ; then
         echo "Reloading conflicting versions of blip.bash over each" \
             "other may result in unpredictable behaviour!" >&2
     fi
