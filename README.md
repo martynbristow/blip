@@ -1,3 +1,5 @@
+[![Code Climate](https://codeclimate.com/github/neechbear/blip/badges/gpa.svg)](https://codeclimate.com/github/neechbear/blip)
+
 # blip - Bash Library for Indolent Programmers
 
 Programmers are lazy. Good system administrators are _really_ lazy. (Why bother doing something more than once)?
