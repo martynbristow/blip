@@ -24,11 +24,9 @@ Please see the man page `man blip.bash`, [bash.pod for full documentation](blip.
 
 * Merge all the other cool and reusable stuff I've written in to this library (see pending functionality below).
 * Make all the shell scripting comply with a sensible style guide (like Google's one at https://google.github.io/styleguide/shell.xml).
-* Write a comprehensive manual page with code examples for each function.
-* Export the manual to HTML as well as native \*NIX man pages.
-* Add comprehensive unit tests.
-* Configure automatic unit test integtation with Travis.
-    * Setup automatic build of release tarballs, Deb and RPM packages upon GitHub repository commits (assuming a Travis pass of unit tests).
+* Finish writing comprehensive manual page with code examples for each function.
+* Finish writing comprehensive unit tests with full code coverage.
+* Setup automatic build of release tarballs, Deb and RPM packages upon GitHub repository commits (assuming a Travis CI pass of unit tests).
 
 ### Pending Functionality
 
