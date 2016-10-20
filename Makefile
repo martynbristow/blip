@@ -11,6 +11,9 @@ all:
 	@echo '  make install prefix=/usr'
 	@echo '  make install prefix=/usr DESTDIR="$$HOME/build"'
 
+test:
+	@bash tests/tests.sh
+
 install:
 	install -m 0755 -d "$(DESTDIR)$(libdir)"
 	install -m 0755 -d "$(DESTDIR)$(man3dir)"
@@ -23,4 +26,5 @@ install:
 	install -m 0644 tests/* "$(DESTDIR)$(docsdir)/tests"
 	install -m 0644 examples/* "$(DESTDIR)$(docsdir)/examples"
     
-.PHONY: install
+.PHONY: all test install
+
