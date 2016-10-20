@@ -76,7 +76,7 @@ RPMMACROS
     # Build tarball.
     rm -Rf --one-file-system --preserve-root "$build_base"
     mkdir -p "$build_dir" "$release_dir"
-    rsync -av --files-from="$base/MANIFEST" "$base" "$build_dir"
+    rsync -av --exclude=".*" --exclude="build/" --exclude="release/" "${base%/}/" "${build_dir%}/"
     tar -C "$build_base" -zcvf "$build_base/${pkg}-${version}.tar.gz" "$(basename "$build_dir")"
     cp -v "$build_base/${pkg}-${version}.tar.gz" "$release_dir"
 
