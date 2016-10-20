@@ -20,6 +20,14 @@ tests () {
         assert_raises "is_integer $test_input" 1 ""
         assert_raises "is_int $test_input" 1 ""
     done
+    for test_input in $(grep -v -- "-" "${BASH_SOURCE[0]%/*}/integers") ; do
+        assert_raises "is_absolute_integer $test_input" 0 ""
+        assert_raises "is_abs_int $test_input" 0 ""
+    done
+    for test_input in $(grep -- "-" "${BASH_SOURCE[0]%/*}/integers") ; do
+        assert_raises "is_absolute_integer $test_input" 1 ""
+        assert_raises "is_abs_int $test_input" 1 ""
+    done
 
     # Save nocasematch original state.
     set +e
