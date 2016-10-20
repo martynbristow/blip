@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/neechbear/blip.svg?branch=master)](https://travis-ci.org/neechbear/blip)
 [![Code Climate](https://codeclimate.com/github/neechbear/blip/badges/gpa.svg)](https://codeclimate.com/github/neechbear/blip)
 
 # blip - Bash Library for Indolent Programmers
