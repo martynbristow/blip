@@ -1,5 +1,5 @@
 _clear_blip () {
-    while read -r cmd opts var_stmt ; do
+    while read -r _ _ var_stmt ; do
         declare -x var="${var_stmt%%=*}"
         if [[ "$var" =~ ^BLIP_.*$ ]] ; then
             unset "$var"
