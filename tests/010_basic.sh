@@ -2,7 +2,9 @@
 
 set -euo pipefail
 
+# shellcheck source=assert.sh
 . "${BASH_SOURCE[0]%/*}/assert.sh"
+# shellcheck source=_clear_blip.sh
 . "${BASH_SOURCE[0]%/*}/_clear_blip.sh"
 
 tests () {
