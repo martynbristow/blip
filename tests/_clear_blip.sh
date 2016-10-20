@@ -1,3 +1,4 @@
+#!/bin/bash
 _clear_blip () {
     while read -r _ _ var_stmt ; do
         declare -x var="${var_stmt%%=*}"
