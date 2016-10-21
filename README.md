@@ -24,17 +24,17 @@ Please see the man page `man blip.bash`, [bash.pod for full
 documentation](blip.bash.pod) or `/usr/share/doc/blip` directory for code
 examples and other useful information.
 
-* https://nicolaw.uk/blip
-* https://github.com/neechbear/blip/
-  * https://github.com/neechbear/blip/releases
-  * https://raw.githubusercontent.com/neechbear/blip/master/blip.bash
+* <https://nicolaw.uk/blip>
+* <https://github.com/neechbear/blip/>
+  * <https://github.com/neechbear/blip/releases>
+  * <https://raw.githubusercontent.com/neechbear/blip/master/blip.bash>
 
 ## TODO
 
 * Merge all the other cool and reusable stuff I've written in to this library
   (see pending functionality below).
 * Make all the shell scripting comply with a sensible style guide (like Google's
-  one at https://google.github.io/styleguide/shell.xml).
+  one at <https://google.github.io/styleguide/shell.xml>).
 * Finish writing comprehensive manual page with code examples for each function.
 * Finish writing comprehensive unit tests with full code coverage.
 * Setup automatic build of release tarballs, Deb and RPM packages upon GitHub
@@ -51,6 +51,6 @@ examples and other useful information.
 
 ## See Also
 
-https://github.com/akesterson/cmdarg - A pure bash library to make argument
+<https://github.com/akesterson/cmdarg> - A pure bash library to make argument
 parsing far less troublesome.
 
