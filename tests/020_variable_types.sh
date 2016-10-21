@@ -2,13 +2,10 @@
 
 set -euo pipefail
 
-# shellcheck source=assert.sh
 . "${BASH_SOURCE[0]%/*}/assert.sh"
-# shellcheck source=_clear_blip.sh
 . "${BASH_SOURCE[0]%/*}/_clear_blip.sh"
 
 tests () {
-    # shellcheck source=../blip.bash
     declare -x blip="${BASH_SOURCE[0]%/*}/../blip.bash"
     _clear_blip
     source "$blip"

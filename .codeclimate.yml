@@ -2,6 +2,9 @@
 engines:
   shellcheck:
     enabled: true
+    checks:
+      SC1090:
+        enabled: false
   fixme:
     enabled: true
   markdownlint:
