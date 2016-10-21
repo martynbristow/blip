@@ -25,7 +25,7 @@ get_trap_stack INT
 get_trap_stack HUP
 unset_trap_stack HUP
 get_trap_stack HUP
-push_trap_stack 'for ((x=0; x<=10; x++)) ; do echo " >> x=$x << "; done' INT HUP
+push_trap_stack 'for ((x=0; x<=10; x++)) ; do echo " >> x=$x << "; done' INT HUP # shellcheck disable=SC2016
 push_trap_stack "echo 'The final countdown.'" INT
 
 echo "${ANSI[bold]}${ANSI[cyan]}Try pressing Control-C to trigger a SIGINT trap handler stack.${ANSI[reset]}"
