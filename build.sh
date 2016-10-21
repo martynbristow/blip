@@ -12,30 +12,34 @@ set -vxueo pipefail
 umask 0077
 
 main () {
-    local base="$(readlink -f "$(dirname "$0")")"
-    local pkg="blip"
+    declare base
+    base="$(readlink -f "$(dirname "$0")")"
+    declare -x pkg="blip"
+
     [[ -e "$base/${pkg}.bash" ]]
     source "$base/${pkg}.bash"
 
     # Version information for releases spewed in a couple of different
     # places for Debs and RPMs, so this argument is mostly meaningless
     # at the moment. It needs to be tied in to git release tags anyway.
-    local dch_version_full="$(egrep -o "^${pkg} \([0-9]+\.[0-9]+(-[0-9]+)?\) " "$base/debian/changelog" | egrep -o '[0-9]+\.[0-9]+(-[0-9]+)?' | head -1)"
-    local dch_version="${dch_version_full%-*}"
-    local dch_release="${dch_version_full#*-}"
-    local version="${1:-$dch_version}"
-    local release="${2:-$dch_release}"
+    declare dch_version_full
+    dch_version_full="$(egrep -o "^${pkg} \([0-9]+\.[0-9]+(-[0-9]+)?\) " "$base/debian/changelog" | egrep -o '[0-9]+\.[0-9]+(-[0-9]+)?' | head -1)"
+    declare -x dch_version="${dch_version_full%-*}"
+    declare -x dch_release="${dch_version_full#*-}"
+    declare -x version="${1:-$dch_version}"
+    declare -x release="${2:-$dch_release}"
     release="${release:-1}"
 
     [[ "$version" =~ ^[0-9]+\.[0-9]+$ ]]
     is_int "$release"
 
-    local build_base="$base/build"
-    local build_dir="$build_base/${pkg}-${version}"
-    local release_dir="$base/release/${pkg}-${version}${release:+-$release}"
+    declare -x build_base="$base/build"
+    declare -x build_dir="$build_base/${pkg}-${version}"
+    declare -x release_dir="$base/release/${pkg}-${version}${release:+-$release}"
 
     # We should sign stuff if we're the author.
-    local rpmbuild_extra_args= gpg_keyid=
+    declare rpmbuild_extra_args
+    declare gpg_keyid
     if [[ "$(hostid)" = "007f0101" ]] && [[ "$(get_username)" = "nicolaw" ]] ; then
         gpg_keyid="6393F646"
         rpmbuild_extra_args="--sign"
@@ -65,8 +69,8 @@ RPMMACROS
     fi > "$base/README.html"
 
     # Scan for missing documentation.
-    local missing_func_docs=""
-    while read function ; do
+    declare -x missing_func_docs=""
+    while read -r function ; do
         function="${function%% *}"
         if ! grep -q "^=head2 $function " "$base/${pkg}.bash.pod" ; then
             missing_func_docs="${missing_func_docs:+$missing_func_docs }${function%% *}"
@@ -91,7 +95,7 @@ RPMMACROS
             debsign -k "$gpg_keyid" "$build_base/${pkg}_${version}${release:+-$release}.dsc"
             gpg --verify "$build_base/${pkg}_${version}${release:+-$release}.dsc"
         fi
-        mv -v *.dsc *.changes *.build *.debian.tar.gz *.orig.tar.gz *.deb "$release_dir"
+        mv -v -- *.dsc *.changes *.build *.debian.tar.gz *.orig.tar.gz *.deb "$release_dir"
         dpkg-deb -I "$release_dir/${pkg}_${version}${release:+-$release}_all.deb"
         dpkg-deb -c "$release_dir/${pkg}_${version}${release:+-$release}_all.deb"
         popd
