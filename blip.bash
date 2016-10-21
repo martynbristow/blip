@@ -199,7 +199,7 @@ pop_trap_stack () {
             declare -ix idx=${map[-1]}
             BLIP_TRAP_STACK[$idx]=""
             unset map[${#map[@]}-1]
-            BLIP_TRAP_MAP[$sig]="${map[@]}"
+            BLIP_TRAP_MAP[$sig]="${map[*]}"
         fi 
 
         if [[ $BLIP_DEBUG_LOGLEVEL -ge 1 ]] ; then
@@ -285,6 +285,23 @@ get_exclusive_execution_lock () {
     fi
 }
 
+read_config_file () {
+    declare -x config_file="${1:-}"; shift
+    _safe_read_vars () {
+        declare -x input_file="$1"
+        (
+            source "$input_file" || :
+            for var in "$@" ; do
+                printf '%q' "${var}=${!var:-}"
+                echo
+            done
+        ) || :
+    }
+    while read -r line ; do
+        declare "$(eval "echo ${line}")" || :
+    done < <(_safe_read_vars "$config_file")
+}
+
 # Return the length of the longest argument.
 get_max_length () {
     declare -ix max=0
@@ -294,6 +311,13 @@ get_max_length () {
         fi
     done
     echo -n "$max"
+}
+
+trim () {
+    declare -x string="${1:-}"
+    string="${string#"${string%%[![:space:]]*}"}"
+    string="${string%"${string##*[![:space:]]}"}"
+    echo -n "$string"
 }
 
 get_string_characters () {
@@ -365,7 +389,7 @@ if ! [[ -n "${BLIP_START_UNIXTIME+defined}" ]] ; then
     if [[ ${BASH_VERSINFO[0]} -ge 4 && ${BASH_VERSINFO[1]} -ge 2 ]] ; then
         declare -xrgi BLIP_START_UNIXTIME="$(printf "%(%s)T" -2)"
     else
-        declare -xrgi BLIP_START_UNIXTIME="$(( $(date +"%s") - $SECONDS ))"
+        declare -xrgi BLIP_START_UNIXTIME="$(( $(date +"%s") - SECONDS ))"
     fi
 fi
 
@@ -477,7 +501,8 @@ get_gecos_name () {
 get_gecos_info () {
     declare -x key="${1:-}"
     declare -x user="${2:-$(get_username)}"
-    while IFS=: read username passwd uid gid gecos home shell ; do
+    #while IFS=: read username passwd uid gid gecos home shell ; do
+    while IFS=: read username _ _ _ gecos _ _ ; do
         if [[ "$user" = "$username" ]] ; then
             if [[ -n "$key" ]] && [[ "$gecos" =~ ([,;]) ]] ; then
                 IFS="${BASH_REMATCH[1]}" read name addr office home email <<< "$gecos"
