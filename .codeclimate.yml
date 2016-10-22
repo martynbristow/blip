@@ -5,6 +5,8 @@ engines:
     checks:
       SC1090:
         enabled: false
+      SC2102:
+        enabled: false
   fixme:
     enabled: true
   markdownlint:
