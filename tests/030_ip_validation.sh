@@ -1,15 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail
-
-. "${BASH_SOURCE[0]%/*}/assert.sh"
-. "${BASH_SOURCE[0]%/*}/_clear_blip.sh"
-
-tests () {
-    declare -x blip="${BASH_SOURCE[0]%/*}/../blip.bash"
-    _clear_blip
-    source "$blip"
-
+test_030_ip_validation () {
     # IPv4 address validation.
     declare test_input
     while read -r test_input ; do
@@ -45,6 +36,4 @@ tests () {
 
     assert_end "${BASH_SOURCE[0]##*/}"
 }
-
-tests "$@"
 

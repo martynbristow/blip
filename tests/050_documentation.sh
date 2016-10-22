@@ -1,16 +1,9 @@
 #!/bin/bash
 
-set -euo pipefail
-
-. "${BASH_SOURCE[0]%/*}/assert.sh"
-. "${BASH_SOURCE[0]%/*}/_clear_blip.sh"
-
-tests () {
+test_050_documentation () {
     declare -x blip="${BASH_SOURCE[0]%/*}/../blip.bash"
     declare -x pod="${blip}.pod"
     declare -x man3="${blip}.3"
-    _clear_blip
-    source "$blip"
 
     # Check all functions are documented.
     while read -r function ; do
@@ -30,6 +23,4 @@ tests () {
 
     assert_end "${BASH_SOURCE[0]##*/}"
 }
-
-tests "$@"
 

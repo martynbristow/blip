@@ -1,13 +1,9 @@
 #!/bin/bash
 
-set -euo pipefail
+source "${BASH_SOURCE[0]%/*}/_clear_blip.sh"
 
-. "${BASH_SOURCE[0]%/*}/assert.sh"
-. "${BASH_SOURCE[0]%/*}/_clear_blip.sh"
-
-tests () {
+test_010_basic () {
     declare -x blip="${BASH_SOURCE[0]%/*}/../blip.bash"
-    _clear_blip
 
     # Try loading blip.
     assert_raises "bash -c '_clear_blip; . \"$blip\"'" 0 ""
@@ -20,6 +16,4 @@ tests () {
 
     assert_end "${BASH_SOURCE[0]##*/}"
 }
-
-tests "$@"
 

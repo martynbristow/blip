@@ -1,15 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail
-
-. "${BASH_SOURCE[0]%/*}/assert.sh"
-. "${BASH_SOURCE[0]%/*}/_clear_blip.sh"
-
-tests () {
-    declare -x blip="${BASH_SOURCE[0]%/*}/../blip.bash"
-    _clear_blip
-    source "$blip"
-
+test_020_variable_types () {
     # Simple variable type tests.
     declare test_input
     while read -r test_input ; do
@@ -30,10 +21,8 @@ tests () {
     done < <(grep -- "-" "${BASH_SOURCE[0]%/*}/integers")
 
     # Save nocasematch original state.
-    set +e
     shopt -q nocasematch
     declare -xi nocasematch=$?
-    set -e
 
     shopt -s nocasematch
     while read -r test_input ; do
@@ -64,6 +53,4 @@ tests () {
 
     assert_end "${BASH_SOURCE[0]##*/}"
 }
-
-tests "$@"
 
