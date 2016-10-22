@@ -42,6 +42,16 @@ Please feel free to contact the author or offer patches to the source.
 
 Alias for C<abs ()>.
 
+=head2 is_mac_address ()
+
+=head2 is_eui48_address ()
+
+=head2 is_eui64_address ()
+
+=head2 read_config_file ()
+
+=head2 trim ()
+
 =head2 append_trap "$ACTION" "$SIGNALn" ...
 
 =head2 execute_trap_stack "$SIGNAL"
@@ -163,6 +173,12 @@ Example:
  BLIP_VERSINFO[2] = 3          # Patch / release number
  BLIP_VERSINFO[3] = prerelease # Release status
 
+=head2 BLIP_START_UNIXTIME
+
+=head2 BLIP_TRAP_MAP
+
+=head2 BLIP_TRAP_STACK
+
 =head2 ANSI, & ANSI_*
 
 These variables contain common ANSI terminal colour codes.
@@ -177,6 +193,8 @@ through the following code example:
 See also L<#BLIP_ANSI_VARIABLES> in the L<#ENVIRONMENT> section below.
 
 =head1 ENVIRONMENT
+
+=head2 BLIP_DEBUG_LOGLEVEL
 
 =head2 BLIP_ALLOW_FOREIGN_SHELLS
 

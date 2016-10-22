@@ -71,7 +71,7 @@
 .\" ========================================================================
 .\"
 .IX Title "BLIP.BASH 3"
-.TH BLIP.BASH 3 "2016-10-11" "blip.bash 0.1" "blip.bash"
+.TH BLIP.BASH 3 "2016-10-22" "blip.bash 0.1" "blip.bash"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -115,6 +115,16 @@ Please feel free to contact the author or offer patches to the source.
 .SS "absolute ()"
 .IX Subsection "absolute ()"
 Alias for \f(CW\*(C`abs ()\*(C'\fR.
+.SS "is_mac_address ()"
+.IX Subsection "is_mac_address ()"
+.SS "is_eui48_address ()"
+.IX Subsection "is_eui48_address ()"
+.SS "is_eui64_address ()"
+.IX Subsection "is_eui64_address ()"
+.SS "read_config_file ()"
+.IX Subsection "read_config_file ()"
+.SS "trim ()"
+.IX Subsection "trim ()"
 .ie n .SS "append_trap ""$ACTION"" ""$SIGNALn"" ..."
 .el .SS "append_trap ``$ACTION'' ``$SIGNALn'' ..."
 .IX Subsection "append_trap $ACTION $SIGNALn ..."
@@ -242,6 +252,12 @@ Example:
 \& BLIP_VERSINFO[2] = 3          # Patch / release number
 \& BLIP_VERSINFO[3] = prerelease # Release status
 .Ve
+.SS "\s-1BLIP_START_UNIXTIME\s0"
+.IX Subsection "BLIP_START_UNIXTIME"
+.SS "\s-1BLIP_TRAP_MAP\s0"
+.IX Subsection "BLIP_TRAP_MAP"
+.SS "\s-1BLIP_TRAP_STACK\s0"
+.IX Subsection "BLIP_TRAP_STACK"
 .SS "\s-1ANSI, &\s0 ANSI_*"
 .IX Subsection "ANSI, & ANSI_*"
 These variables contain common \s-1ANSI\s0 terminal colour codes.
@@ -258,6 +274,8 @@ through the following code example:
 See also #BLIP_ANSI_VARIABLES in the #ENVIRONMENT section below.
 .SH "ENVIRONMENT"
 .IX Header "ENVIRONMENT"
+.SS "\s-1BLIP_DEBUG_LOGLEVEL\s0"
+.IX Subsection "BLIP_DEBUG_LOGLEVEL"
 .SS "\s-1BLIP_ALLOW_FOREIGN_SHELLS\s0"
 .IX Subsection "BLIP_ALLOW_FOREIGN_SHELLS"
 When set to \f(CW1\fR, inhibits \f(CW\*(C`exit\*(C'\fR functionality to abort operation
