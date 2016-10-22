@@ -1,3 +1,9 @@
+#
+# MIT License
+#
+# Copyright (c) 2016 Nicola Worthington
+#
+
 prefix = /usr/local
 bindir = $(prefix)/bin
 libdir = $(prefix)/lib

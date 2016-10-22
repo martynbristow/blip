@@ -1,5 +1,9 @@
 #!/bin/bash
-
+#
+# MIT License
+#
+# Copyright (c) 2016 Nicola Worthington
+#
 # Temporary script while I'm still learning about Debian packaging best
 # practices and the like. This script isn't really intended for general
 # consumption. I intend to automate the creation of release tarballs
