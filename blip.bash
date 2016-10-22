@@ -187,7 +187,9 @@ push_trap_stack () {
             done
             echo "\$BLIP_TRAP_MAP[$sig]=${BLIP_TRAP_MAP[$sig]:-}"
         fi
-        [[ $BLIP_DEBUG_LOGLEVEL -ge 3 ]] && trap -p "$sig" || true
+        if [[ $BLIP_DEBUG_LOGLEVEL -ge 3 ]] ; then
+            trap -p "$sig" || true
+        fi
     done
 }
 
@@ -209,7 +211,9 @@ pop_trap_stack () {
                 echo "\$BLIP_TRAP_STACK[$i]=${BLIP_TRAP_STACK[$i]:-}"
             done
         fi
-        [[ $BLIP_DEBUG_LOGLEVEL -ge 3 ]] && trap -p "$sig" || true
+        if [[ $BLIP_DEBUG_LOGLEVEL -ge 3 ]] ; then
+            trap -p "$sig" || true
+        fi
     done
 }
 
@@ -410,7 +414,7 @@ get_date () {
     declare -x format="${1:-%a %b %d %H:%M:%S %Z %Y}"
     declare -x when="${2:--1}"
     if [[ ${BASH_VERSINFO[0]} -ge 4 && ${BASH_VERSINFO[1]} -ge 2 ]] ; then
-        printf "%($format)T\n" $when
+        printf "%($format)T\n" "$when"
     else
         if [[ "$when" = "-1" ]] ; then
             when=""
@@ -626,7 +630,7 @@ get_fs_mounts () {
 # %y %Y  time of last modification, human-readable (content)
 # %z %Z  time of last change, human-readable (meta data)
 get_file_age () {
-    echo -n $(( $(get_unixtime) - $(stat -c %Y "${1:-}") ))
+    echo -n $(( $(get_unixtime -1) - $(stat -c %Y "${1:-}") ))
 }
 
 # Define ANSI colour code variables.
