@@ -449,6 +449,36 @@ is_in_path () {
     return 0
 }
 
+# MAC-48 and EUI-48 are syntactically indistinguishable, so for the sake of
+# consistency this is named is_eui48_address to match the eui64 function.
+is_eui48_address () {
+    declare -x addr="${1:-}"
+    addr="${addr,,}"
+    if   [[ $addr =~ ^[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}$ ]] ; then
+        return 0
+    elif [[ $addr =~ ^[a-f0-9]{2}-[a-f0-9]{2}-[a-f0-9]{2}-[a-f0-9]{2}-[a-f0-9]{2}-[a-f0-9]{2}$ ]] ; then
+        return 0
+    elif [[ $addr =~ ^[a-f0-9]{4}\.[a-f0-9]{4}\.[a-f0-9]{4}$ ]] ; then
+        return 0
+    fi
+    return 1
+}
+
+is_eui64_address () {
+    declare -x addr="${1:-}"
+    addr="${addr,,}"
+    if   [[ $addr =~ ^[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}$ ]] ; then
+        return 0
+    elif [[ $addr =~ ^[a-f0-9]{2}-[a-f0-9]{2}-[a-f0-9]{2}-[a-f0-9]{2}-[a-f0-9]{2}-[a-f0-9]{2}-[a-f0-9]{2}-[a-f0-9]{2}$ ]] ; then
+        return 0
+    fi
+    return 1
+}
+
+# IEEE 802 standard format for MAC-48 and EUI-48  addresses in most
+# common human friendly transmission order.
+is_mac_address () { is_eui48_address "$@"; }
+
 is_ipv4_address () {
     declare -x regex='(?<![0-9])(?:(?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]))(?![0-9])'
     $BLIP_EXTERNAL_CMD_GREP -Pq "^$regex$" <<< "${1:-}"
