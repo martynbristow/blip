@@ -10,7 +10,7 @@ test_070_license () {
     do
         for string in "${strings[@]}"
         do
-            assert_raises "grep -w '$string' '${base%/}/$file'" 0 ""
+            assert_raises "grep -w '$string' '${base%/}/$file'" 0
         done
     done
 

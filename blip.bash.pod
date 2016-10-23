@@ -114,15 +114,25 @@ Return C<0> I<true> if C<$ARG1> may be considered boolean false by a
 human. Values to be considered true include: C<0>, C<false>, C<no>, C<off>,
 C<disable> and C<disabled>.
 
-=head2 is_in_path ()
+=head2 is_in_path "$CMDn" ...
+
+=head2 is_float "$ARG1"
+
+Return C<0> I<true> if C<$ARG1> is a floating-point value.
 
 =head2 is_int "$ARG1"
 
 Return C<0> I<true> if C<$ARG1> is an integer value.
 
-=head2 is_integer ()
+=head2 is_integer "$ARG1"
 
 Alias for C<is_int ()>.
+
+=head2 is_zero "$ARG1"
+
+=head2 is_negative "$ARG1"
+
+=head2 is_positive "$ARG1"
 
 =head2 is_true "$ARG1"
 
@@ -130,11 +140,11 @@ Return C<0> I<true> if C<$ARG1> may be considered boolean true by a
 human. Values to be considered true include: C<1>, C<true>, C<yes>, C<on>,
 C<enable> and C<enabled>.
 
-=head2 is_word_in_string ()
+=head2 is_word_in_string "$STR1" "$WORD1"
 
-=head2 to_lower ()
+=head2 to_lower "$ARGn" ...
 
-=head2 to_upper ()
+=head2 to_upper "$ARGn" ...
 
 =head2 url_exists "$URL"
 
@@ -148,11 +158,19 @@ Outputs (echos to C<STDOUT>) the full HTTP response headers returned by the remo
 web server for C<$URL>.
 Requires the C<curl> command to be present in the shell search path.
 
+=head2 url_http_response "$URL"
+
+Outputs (echos to C<STDOUT>) the HTTP response code (including textual 
+description) returned by the remote web server for C<$URL>. Follows HTTP
+redirects using C<curl>'s C<-L> flag, returning only the last HTTP response
+code.
+
+Requires the C<curl> command to be present in the shell search path.
+
 =head2 url_http_response_code "$URL"
 
-Outputs (echos to C<STDOUT>) the HTTP response code returned by the remote
-web server for C<$URL>.
-Requires the C<curl> command to be present in the shell search path.
+Similar to C<url_http_response>, except the textual description is omitted,
+outputting only the numerical value.
 
 =head1 VARIABLES
 
@@ -247,6 +265,18 @@ Specifies an explicit command path when executing the external dependency
 command C<flock>. Defaults to C<flock> without an explicit path in order to
 search C<$PATH>.
 
+=head2 BLIP_EXTERNAL_CMD_STAT
+
+Specifies an explicit command path when executing the external dependency
+command C<stat>. Defaults to C<stat> without an explicit path in order to
+search C<$PATH>.
+
+=head2 BLIP_EXTERNAL_CMD_BC
+
+Specifies an explicit command path when executing the external dependency
+command C<bc>. Defaults to C<bc> without an explicit path in order to
+search C<$PATH>.
+
 =head2 BLIP_EXTERNAL_CMD_CURL
 
 Specifies an explicit command path when executing the external dependency
@@ -263,12 +293,6 @@ search C<$PATH>.
 
 Specifies an explicit command path when executing the external dependency
 command C<grep>. Defaults to C<grep> without an explicit path in order to
-search C<$PATH>.
-
-=head2 BLIP_EXTERNAL_CMD_EGREP
-
-Specifies an explicit command path when executing the external dependency
-command C<egrep>. Defaults to C<egrep> without an explicit path in order to
 search C<$PATH>.
 
 =head1 AUTHOR

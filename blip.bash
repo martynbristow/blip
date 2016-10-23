@@ -4,6 +4,11 @@
 #
 # Please see the man page blip.bash(3) or bash.pod for full documentation.
 #
+# This library is written for, and requires the bash shell. It is not expected
+# to, nor intended to work with the bourne shell or any other shell. Great care
+# has been taken to use internal built-in functions instead of forking external
+# commands wherever possible, in order to offer the best performance possible.
+#
 # https://nicolaw.uk/blip
 # https://github.com/neechbear/blip/
 # https://github.com/neechbear/blip/blob/master/blip.bash.pod
@@ -73,7 +78,6 @@ fi
 
 # TODO(nicolaw): Work out how to automatically populate these values at build
 #                and release (packaging) time.
-
 if [[ -z "${BLIP_VERSION:+defined}" ]] ; then
     declare -rxg BLIP_VERSION="0.1-4-prerelease"
     declare -rxga BLIP_VERSINFO=("0" "1" "4" "prerelease")
@@ -110,11 +114,27 @@ if [[ -n "${BLIP_REQUIRE_VERSION:-}" ]] ; then
 fi
 
 # Assign command names to run from $PATH unless otherwise already defined.
-declare -gx BLIP_EXTERNAL_CMD_FLOCK="${BLIP_EXTERNAL_CMD_CURL:-flock}"
+declare -gx BLIP_EXTERNAL_CMD_FLOCK="${BLIP_EXTERNAL_CMD_FLOCK:-flock}"
+declare -gx BLIP_EXTERNAL_CMD_STAT="${BLIP_EXTERNAL_CMD_STAT:-stat}"
+declare -gx BLIP_EXTERNAL_CMD_BC="${BLIP_EXTERNAL_CMD_BC:-bc}"
 declare -gx BLIP_EXTERNAL_CMD_CURL="${BLIP_EXTERNAL_CMD_CURL:-curl}"
 declare -gx BLIP_EXTERNAL_CMD_DATE="${BLIP_EXTERNAL_CMD_DATE:-date}"
 declare -gx BLIP_EXTERNAL_CMD_GREP="${BLIP_EXTERNAL_CMD_GREP:-grep}"
-declare -gx BLIP_EXTERNAL_CMD_EGREP="${BLIP_EXTERNAL_CMD_EGREP:-egrep}" # Remove this dependency!
+
+# TOOD(nicolaw): Decide if individually exported environment variables are best
+#                or if an associative array is more convenient. The associative
+#                array is certianly cleaner, but it cannot be exported to sub-
+#                shells, which makes it less flexible.
+#while read -r _ _blip_vtype _blip_vname ; do
+#    if [[ ! "$_blip_vtype" =~ A ]] && \
+#       [[ "$_blip_vname" = "BLIP_EXTERNAL_CMD" ]] ; then
+#        unset BLIP_EXTERNAL_CMD
+#    fi
+#done < <(typeset -p BLIP_EXTERNAL_CMD 2>/dev/null||:)
+#declare -p BLIP_EXTERNAL_CMD >/dev/null 2>&1 || declare -Agx BLIP_EXTERNAL_CMD=()
+#for _ in flock stat bc curl date grep egrep ; do
+#    BLIP_EXTERNAL_CMD[$_]="$_"
+#done
 
 # Trap handler stack.
 declare -gxa BLIP_TRAP_STACK=()
@@ -426,21 +446,47 @@ get_date () {
 }
 
 url_http_header () {
-    $BLIP_EXTERNAL_CMD_CURL -s -I "$1"
+    $BLIP_EXTERNAL_CMD_CURL -k -L -s -I "$1"
 }
 
+# 200 OK
+# Returns "200"
 url_http_response_code () {
-    url_http_header "$1" | $BLIP_EXTERNAL_CMD_GREP ^HTTP
+    declare -x url="$1"
+    declare -x response="$(url_http_response "$url")"
+    if [[ "$response" =~ ([0-9]+) ]] ; then
+        echo -n "${BASH_REMATCH[1]}"
+    fi
 }
 
+# HTTP/1.1 200 OK
+# Returns "200 OK"
+url_http_response () {
+    declare -x url="$1"
+    declare -x header=""
+    declare -x response=""
+    while read -r header ; do
+        if [[ "$header" =~ ^HTTP(/[0-9]*\.?[0-9]+)?\ +([[:print:]]+) ]] ; then
+            response="${BASH_REMATCH[2]}"
+        fi
+    done < <(url_http_header "$url")
+    [[ -n "$response" ]] && echo -n "$response"
+}
+
+# TODO(nicolaw): Make less broken; what about non-http:// and file:// URLs?
 url_exists () {
     declare -x url="$1"
     if [[ "$url" =~ ^file:// ]] ; then
-        $BLIP_EXTERNAL_CMD_CURL -s -I "$url" -o /dev/null 2>/dev/null
+        $BLIP_EXTERNAL_CMD_CURL -k -s -L -I "$url" -o /dev/null 2>/dev/null
     else
-        url_http_response_code "$url" \
-            | $BLIP_EXTERNAL_CMD_EGREP -qw '^HTTP[^ ]* 2[0-9][0-9]'
+        declare -x response="$(url_http_response_code "$url")"
+        if     is_int "$response" \
+            && [[ $response -ge 200 ]] \
+            && [[ $response -lt 300 ]] ; then
+                return 0
+        fi
     fi
+    return 1
 }
 
 is_in_path () {
@@ -483,6 +529,7 @@ is_eui64_address () {
 # common human friendly transmission order.
 is_mac_address () { is_eui48_address "$@"; }
 
+# TODO(nicolaw): Try to get this working using bash's own regex engine.
 is_ipv4_address () {
     declare -x regex='(?<![0-9])(?:(?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]))(?![0-9])'
     $BLIP_EXTERNAL_CMD_GREP -Pq "^$regex$" <<< "${1:-}"
@@ -498,6 +545,7 @@ is_ipv4_prefix () {
     return 1
 }
 
+# TODO(nicolaw): Try to get this working using bash's own regex engine.
 is_ipv6_address () {
     declare -x regex='((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?'
     $BLIP_EXTERNAL_CMD_GREP -Pq "^$regex$" <<< "${1:-}"
@@ -564,12 +612,23 @@ is_boolean () { is_true "$@" || is_false "$@"; }
 is_abs_int () { [[ "${1:-}" =~ ^[0-9]+$ ]]; }
 is_absolute_integer () { is_abs_int "$@"; }
 
+is_zero () { [[ "${1:-}" =~ ^[-\+]?0*\.?0+$ ]]; }
+is_negative () { [[ "${1:-}" =~ ^-[0-9]*\.?[0-9]+$ ]] && [[ "${1:-}" =~ [1-9] ]]; }
+is_positive () { [[ "${1:-}" =~ ^\+?[0-9]*\.?[0-9]+$ ]] && [[ "${1:-}" =~ [1-9] ]]; }
+
+is_float () { [[ "${1:-}" =~ ^[-\+]?[0-9]*\.[0-9]+$ ]]; }
+
 # Converts single argument input to an absolute value.
 abs () {
-    if [[ ${1:-} -lt 0 ]] ; then
-        echo -n "${1:-}"
+    declare -x val="${1:-}"
+    if is_positive "$val" || is_zero "$val" ; then
+        echo -n "$val"
+    elif is_int "$val" ; then
+        echo -n $(( val * -1 ))
+    elif is_float "$val" ; then
+        $BLIP_EXTERNAL_CMD_BC <<< "$val * -1"
     else
-        echo -n $(( ${1:-} * -1 ))
+        return 2
     fi
 }
 absolute () { abs "$@"; }
@@ -592,8 +651,8 @@ to_lower () {
 
 # Evaluates if argument2 is present as distinct word in argument1.
 # Equivalent of grep -w.
-# TODO: Should this be extended to have is_word_in_strings, and/or
-#       is/are_words_in_string variants? Would that be overkill?
+# TODO(nicolaw): Should this be extended to have is_word_in_strings, and/or
+#                is/are_words_in_string variants? Would that be overkill?
 is_word_in_string () {
     declare -x str="${1:-}"
     declare -x re="\\b${2:-}\\b"
@@ -630,7 +689,7 @@ get_fs_mounts () {
 # %y %Y  time of last modification, human-readable (content)
 # %z %Z  time of last change, human-readable (meta data)
 get_file_age () {
-    echo -n $(( $(get_unixtime -1) - $(stat -c %Y "${1:-}") ))
+    echo -n $(( $(get_unixtime -1) - $($BLIP_EXTERNAL_CMD_STAT -c %Y "${1:-}") ))
 }
 
 # Define ANSI colour code variables.
@@ -756,7 +815,7 @@ if is_true "${BLIP_ANSI_VARIABLES:-}" && [[ -z "${ANSI[@]+defined}" ]] ; then
 fi
 
 #
-# That strange feeling you'r experiencing right now... I should apologise for
+# That strange feeling you're experiencing right now... I should apologise for
 # that. It's called cognitive dissonance.
 # https://en.wikipedia.org/wiki/Cognitive_dissonance
 #
@@ -764,4 +823,6 @@ fi
 # software. If it makes any difference to you, I now have very puffy eyes from
 # writing this.
 #
+# "...Hello Doctor, I've been having trouble with my eyes. They're swollen..."
+# 
 

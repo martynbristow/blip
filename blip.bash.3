@@ -71,7 +71,7 @@
 .\" ========================================================================
 .\"
 .IX Title "BLIP.BASH 3"
-.TH BLIP.BASH 3 "2016-10-22" "blip.bash 0.1" "blip.bash"
+.TH BLIP.BASH 3 "2016-10-23" "blip.bash 0.1" "blip.bash"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -194,27 +194,45 @@ Alias for \f(CW\*(C`is_abs_int ()\*(C'\fR.
 Return \f(CW0\fR \fItrue\fR if \f(CW$ARG1\fR may be considered boolean false by a
 human. Values to be considered true include: \f(CW0\fR, \f(CW\*(C`false\*(C'\fR, \f(CW\*(C`no\*(C'\fR, \f(CW\*(C`off\*(C'\fR,
 \&\f(CW\*(C`disable\*(C'\fR and \f(CW\*(C`disabled\*(C'\fR.
-.SS "is_in_path ()"
-.IX Subsection "is_in_path ()"
+.ie n .SS "is_in_path ""$CMDn"" ..."
+.el .SS "is_in_path ``$CMDn'' ..."
+.IX Subsection "is_in_path $CMDn ..."
+.ie n .SS "is_float ""$ARG1"""
+.el .SS "is_float ``$ARG1''"
+.IX Subsection "is_float $ARG1"
+Return \f(CW0\fR \fItrue\fR if \f(CW$ARG1\fR is a floating-point value.
 .ie n .SS "is_int ""$ARG1"""
 .el .SS "is_int ``$ARG1''"
 .IX Subsection "is_int $ARG1"
 Return \f(CW0\fR \fItrue\fR if \f(CW$ARG1\fR is an integer value.
-.SS "is_integer ()"
-.IX Subsection "is_integer ()"
+.ie n .SS "is_integer ""$ARG1"""
+.el .SS "is_integer ``$ARG1''"
+.IX Subsection "is_integer $ARG1"
 Alias for \f(CW\*(C`is_int ()\*(C'\fR.
+.ie n .SS "is_zero ""$ARG1"""
+.el .SS "is_zero ``$ARG1''"
+.IX Subsection "is_zero $ARG1"
+.ie n .SS "is_negative ""$ARG1"""
+.el .SS "is_negative ``$ARG1''"
+.IX Subsection "is_negative $ARG1"
+.ie n .SS "is_positive ""$ARG1"""
+.el .SS "is_positive ``$ARG1''"
+.IX Subsection "is_positive $ARG1"
 .ie n .SS "is_true ""$ARG1"""
 .el .SS "is_true ``$ARG1''"
 .IX Subsection "is_true $ARG1"
 Return \f(CW0\fR \fItrue\fR if \f(CW$ARG1\fR may be considered boolean true by a
 human. Values to be considered true include: \f(CW1\fR, \f(CW\*(C`true\*(C'\fR, \f(CW\*(C`yes\*(C'\fR, \f(CW\*(C`on\*(C'\fR,
 \&\f(CW\*(C`enable\*(C'\fR and \f(CW\*(C`enabled\*(C'\fR.
-.SS "is_word_in_string ()"
-.IX Subsection "is_word_in_string ()"
-.SS "to_lower ()"
-.IX Subsection "to_lower ()"
-.SS "to_upper ()"
-.IX Subsection "to_upper ()"
+.ie n .SS "is_word_in_string ""$STR1"" ""$WORD1"""
+.el .SS "is_word_in_string ``$STR1'' ``$WORD1''"
+.IX Subsection "is_word_in_string $STR1 $WORD1"
+.ie n .SS "to_lower ""$ARGn"" ..."
+.el .SS "to_lower ``$ARGn'' ..."
+.IX Subsection "to_lower $ARGn ..."
+.ie n .SS "to_upper ""$ARGn"" ..."
+.el .SS "to_upper ``$ARGn'' ..."
+.IX Subsection "to_upper $ARGn ..."
 .ie n .SS "url_exists ""$URL"""
 .el .SS "url_exists ``$URL''"
 .IX Subsection "url_exists $URL"
@@ -227,12 +245,20 @@ Requires the \f(CW\*(C`curl\*(C'\fR command to be present in the shell search pa
 Outputs (echos to \f(CW\*(C`STDOUT\*(C'\fR) the full \s-1HTTP\s0 response headers returned by the remote
 web server for \f(CW$URL\fR.
 Requires the \f(CW\*(C`curl\*(C'\fR command to be present in the shell search path.
+.ie n .SS "url_http_response ""$URL"""
+.el .SS "url_http_response ``$URL''"
+.IX Subsection "url_http_response $URL"
+Outputs (echos to \f(CW\*(C`STDOUT\*(C'\fR) the \s-1HTTP\s0 response code (including textual 
+description) returned by the remote web server for \f(CW$URL\fR. Follows \s-1HTTP\s0
+redirects using \f(CW\*(C`curl\*(C'\fR's \f(CW\*(C`\-L\*(C'\fR flag, returning only the last \s-1HTTP\s0 response
+code.
+.PP
+Requires the \f(CW\*(C`curl\*(C'\fR command to be present in the shell search path.
 .ie n .SS "url_http_response_code ""$URL"""
 .el .SS "url_http_response_code ``$URL''"
 .IX Subsection "url_http_response_code $URL"
-Outputs (echos to \f(CW\*(C`STDOUT\*(C'\fR) the \s-1HTTP\s0 response code returned by the remote
-web server for \f(CW$URL\fR.
-Requires the \f(CW\*(C`curl\*(C'\fR command to be present in the shell search path.
+Similar to \f(CW\*(C`url_http_response\*(C'\fR, except the textual description is omitted,
+outputting only the numerical value.
 .SH "VARIABLES"
 .IX Header "VARIABLES"
 .SS "\s-1BLIP_VERSION\s0"
@@ -326,6 +352,16 @@ See also: <https://en.wikipedia.org/wiki/ANSI_escape_code>.
 Specifies an explicit command path when executing the external dependency
 command \f(CW\*(C`flock\*(C'\fR. Defaults to \f(CW\*(C`flock\*(C'\fR without an explicit path in order to
 search \f(CW$PATH\fR.
+.SS "\s-1BLIP_EXTERNAL_CMD_STAT\s0"
+.IX Subsection "BLIP_EXTERNAL_CMD_STAT"
+Specifies an explicit command path when executing the external dependency
+command \f(CW\*(C`stat\*(C'\fR. Defaults to \f(CW\*(C`stat\*(C'\fR without an explicit path in order to
+search \f(CW$PATH\fR.
+.SS "\s-1BLIP_EXTERNAL_CMD_BC\s0"
+.IX Subsection "BLIP_EXTERNAL_CMD_BC"
+Specifies an explicit command path when executing the external dependency
+command \f(CW\*(C`bc\*(C'\fR. Defaults to \f(CW\*(C`bc\*(C'\fR without an explicit path in order to
+search \f(CW$PATH\fR.
 .SS "\s-1BLIP_EXTERNAL_CMD_CURL\s0"
 .IX Subsection "BLIP_EXTERNAL_CMD_CURL"
 Specifies an explicit command path when executing the external dependency
@@ -340,11 +376,6 @@ search \f(CW$PATH\fR.
 .IX Subsection "BLIP_EXTERNAL_CMD_GREP"
 Specifies an explicit command path when executing the external dependency
 command \f(CW\*(C`grep\*(C'\fR. Defaults to \f(CW\*(C`grep\*(C'\fR without an explicit path in order to
-search \f(CW$PATH\fR.
-.SS "\s-1BLIP_EXTERNAL_CMD_EGREP\s0"
-.IX Subsection "BLIP_EXTERNAL_CMD_EGREP"
-Specifies an explicit command path when executing the external dependency
-command \f(CW\*(C`egrep\*(C'\fR. Defaults to \f(CW\*(C`egrep\*(C'\fR without an explicit path in order to
 search \f(CW$PATH\fR.
 .SH "AUTHOR"
 .IX Header "AUTHOR"

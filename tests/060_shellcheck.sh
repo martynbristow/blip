@@ -10,7 +10,7 @@ test_060_shellcheck () {
     # https://github.com/koalaman/shellcheck/issues/181
     # This fix doesn't seem to have made it in to the releases of shellcheck
     # that are available for my distribution. :(
-    assert_raises "shellcheck -e SC2102 -s bash '$blip'" 0 ""
+    assert_raises "shellcheck -e SC2102 -s bash '$blip'" 0
 
     assert_end "${BASH_SOURCE[0]##*/}"
 }
