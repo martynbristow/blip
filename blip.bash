@@ -151,7 +151,7 @@ declare -gxA BLIP_TRAP_MAP=() # Maps BLIP_TRAP_STACK indexes to signals
 # http://stackoverflow.com/questions/16115144/bash-save-and-restore-trap-state-easy-way-to-manage-multiple-handlers-for-trap
 
 append_trap () {
-    declare -x action="${1:-}"; shift
+    declare action="${1:-}"; shift
     [[ -z "$action" ]] && return
     declare sig
     for sig in "$@" ; do
@@ -177,12 +177,12 @@ execute_trap_stack () {
 }
 
 push_trap_stack () {
-    declare -x action="${1:-}"; shift
+    declare action="${1:-}"; shift
     [[ -z "$action" ]] && return
 
     declare sig
     for sig in "$@" ; do
-        declare -ix idx="${#BLIP_TRAP_STACK[@]}"
+        declare -i idx="${#BLIP_TRAP_STACK[@]}"
         declare -i i
         for ((i = 0; i < ${#BLIP_TRAP_STACK[@]}; i++)) ; do
             if [[ -z "${BLIP_TRAP_STACK[$i]:-}" ]] ; then
@@ -217,8 +217,8 @@ pop_trap_stack () {
     declare sig
     for sig in "$@" ; do
         if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
-            declare -ax map=(${BLIP_TRAP_MAP[$sig]})
-            declare -ix idx=${map[-1]}
+            declare -a map=(${BLIP_TRAP_MAP[$sig]})
+            declare -i idx=${map[-1]}
             BLIP_TRAP_STACK[$idx]=""
             unset map[${#map[@]}-1]
             BLIP_TRAP_MAP[$sig]="${map[*]}"
@@ -238,7 +238,7 @@ pop_trap_stack () {
 }
 
 set_trap_stack () {
-    declare -x action="${1:-}"; shift
+    declare action="${1:-}"; shift
     [[ -z "$action" ]] && return
 
     declare sig
@@ -276,9 +276,9 @@ get_trap_stack () {
 }
 
 get_pid_lock_filename () {
-    declare -x lock_path="${1:-}"
-    declare -x base_name="${2:-$0}"
-    declare -x tmp_dir="${TMPDIR:-/tmp}"
+    declare lock_path="${1:-}"
+    declare base_name="${2:-$0}"
+    declare tmp_dir="${TMPDIR:-/tmp}"
 
     if [[ -z "$lock_path" ]] ; then
         if [[ -w /var/run ]] ; then
@@ -299,7 +299,7 @@ get_pid_lock_filename () {
 }
 
 get_exclusive_execution_lock () {
-    declare -x pid_file="${1:get_pid_lock_filename}"
+    declare pid_file="${1:get_pid_lock_filename}"
     # Use prefered flock mechanism (probably under Linux).
     if is_in_path "$BLIP_EXTERNAL_CMD_FLOCK" ; then
         :
@@ -310,9 +310,9 @@ get_exclusive_execution_lock () {
 }
 
 read_config_file () {
-    declare -x config_file="${1:-}"; shift
+    declare config_file="${1:-}"; shift
     _safe_read_vars () {
-        declare -x input_file="$1"
+        declare input_file="$1"
         (
             source "$input_file" || :
             for var in "$@" ; do
@@ -328,7 +328,7 @@ read_config_file () {
 
 # Return the length of the longest argument.
 get_max_length () {
-    declare -ix max=0
+    declare -i max=0
     for arg in "$@" ; do
         if [[ ${#arg} -gt $max ]] ; then
             max="${#arg}"
@@ -338,14 +338,14 @@ get_max_length () {
 }
 
 trim () {
-    declare -x string="${1:-}"
+    declare string="${1:-}"
     string="${string#"${string%%[![:space:]]*}"}"
     string="${string%"${string##*[![:space:]]}"}"
     echo -n "$string"
 }
 
 get_string_characters () {
-    declare -x string="${1:-}"
+    declare string="${1:-}"
     declare -i i
     for (( i=0; i<${#string}; i++ )); do
       echo "${string:$i:1}"
@@ -363,16 +363,16 @@ get_string_characters () {
 # Ask the user for confirmation, expecting a single character y or n reponse.
 # Returns 0 when selecting y, 1 when selecting n.
 get_user_confirmation () {
-    declare -x question="${1:-Are you sure?}"
-    declare -x default_response="${2:-}"
+    declare question="${1:-Are you sure?}"
+    declare default_response="${2:-}"
     get_user_selection "$question" "$default_response" "y" "n"
 }
 
 # See also: bash's "select" built-in.
 get_user_selection () {
-    declare -x question="${1:-Make a selection }"; shift
-    declare -x default_response="${1:-}"; shift
-    declare -ix max_response_length="$(get_max_length "$@")"
+    declare question="${1:-Make a selection }"; shift
+    declare default_response="${1:-}"; shift
+    declare -i max_response_length="$(get_max_length "$@")"
 
     # Replace with a standard argument validation routine.
     # http://tldp.org/LDP/abs/html/exitcodes.html
@@ -382,7 +382,7 @@ get_user_selection () {
         return 126
     fi
 
-    declare -x prompt=""
+    declare prompt=""
     declare arg
     for arg in "$@" ; do
         if [[ "$arg" = "$default_response" ]] ; then
@@ -391,13 +391,13 @@ get_user_selection () {
         prompt="${prompt:+$prompt|}$arg"
     done
 
-    declare -x input=""
+    declare input=""
     while read -n 1 -e -r -p "${question}${prompt:+ [$prompt]: }" input ; do
         if [[ -z "$input" ]] ; then
             input="$default_response"
         fi
 
-        declare -ix rc=0
+        declare -i rc=0
         for valid_response in "$@" ; do
             if [[ "$input" = "$valid_response" ]] ; then
                 return $rc
@@ -431,8 +431,8 @@ get_unixtime () { get_date "%s" "$@"; }
 #fi
 
 get_date () {
-    declare -x format="${1:-%a %b %d %H:%M:%S %Z %Y}"
-    declare -x when="${2:--1}"
+    declare format="${1:-%a %b %d %H:%M:%S %Z %Y}"
+    declare when="${2:--1}"
     if [[ ${BASH_VERSINFO[0]} -ge 4 && ${BASH_VERSINFO[1]} -ge 2 ]] ; then
         printf "%($format)T\n" "$when"
     else
@@ -452,8 +452,8 @@ url_http_header () {
 # 200 OK
 # Returns "200"
 url_http_response_code () {
-    declare -x url="$1"
-    declare -x response="$(url_http_response "$url")"
+    declare url="$1"
+    declare response="$(url_http_response "$url")"
     if [[ "$response" =~ ([0-9]+) ]] ; then
         echo -n "${BASH_REMATCH[1]}"
     fi
@@ -462,9 +462,9 @@ url_http_response_code () {
 # HTTP/1.1 200 OK
 # Returns "200 OK"
 url_http_response () {
-    declare -x url="$1"
-    declare -x header=""
-    declare -x response=""
+    declare url="$1"
+    declare header=""
+    declare response=""
     while read -r header ; do
         if [[ "$header" =~ ^HTTP(/[0-9]*\.?[0-9]+)?\ +([[:print:]]+) ]] ; then
             response="${BASH_REMATCH[2]}"
@@ -475,11 +475,11 @@ url_http_response () {
 
 # TODO(nicolaw): Make less broken; what about non-http:// and file:// URLs?
 url_exists () {
-    declare -x url="$1"
+    declare url="$1"
     if [[ "$url" =~ ^file:// ]] ; then
         $BLIP_EXTERNAL_CMD_CURL -k -s -L -I "$url" -o /dev/null 2>/dev/null
     else
-        declare -x response="$(url_http_response_code "$url")"
+        declare response="$(url_http_response_code "$url")"
         if     is_int "$response" \
             && [[ $response -ge 200 ]] \
             && [[ $response -lt 300 ]] ; then
@@ -490,7 +490,7 @@ url_exists () {
 }
 
 is_in_path () {
-    declare -x cmd
+    declare cmd
     for cmd in "$@" ; do
         if ! type -P "$cmd" >/dev/null 2>&1 ; then
              return 1
@@ -502,7 +502,7 @@ is_in_path () {
 # MAC-48 and EUI-48 are syntactically indistinguishable, so for the sake of
 # consistency this is named is_eui48_address to match the eui64 function.
 is_eui48_address () {
-    declare -x addr="${1:-}"
+    declare addr="${1:-}"
     addr="${addr,,}"
     if   [[ $addr =~ ^[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}$ ]] ; then
         return 0
@@ -515,7 +515,7 @@ is_eui48_address () {
 }
 
 is_eui64_address () {
-    declare -x addr="${1:-}"
+    declare addr="${1:-}"
     addr="${addr,,}"
     if   [[ $addr =~ ^[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}:[a-f0-9]{2}$ ]] ; then
         return 0
@@ -531,13 +531,13 @@ is_mac_address () { is_eui48_address "$@"; }
 
 # TODO(nicolaw): Try to get this working using bash's own regex engine.
 is_ipv4_address () {
-    declare -x regex='(?<![0-9])(?:(?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]))(?![0-9])'
+    declare regex='(?<![0-9])(?:(?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]))(?![0-9])'
     $BLIP_EXTERNAL_CMD_GREP -Pq "^$regex$" <<< "${1:-}"
 }
 
 is_ipv4_prefix () {
-    declare -x ip="${1%%/*}"
-    declare -x prefix="${1##*/}"
+    declare ip="${1%%/*}"
+    declare prefix="${1##*/}"
     if is_ipv4_address "$ip" && is_int "$prefix" &&
         [[ $prefix -ge 0 ]] && [[ $prefix -le 32 ]] ; then
         return 0
@@ -547,13 +547,13 @@ is_ipv4_prefix () {
 
 # TODO(nicolaw): Try to get this working using bash's own regex engine.
 is_ipv6_address () {
-    declare -x regex='((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?'
+    declare regex='((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?'
     $BLIP_EXTERNAL_CMD_GREP -Pq "^$regex$" <<< "${1:-}"
 }
 
 is_ipv6_prefix () {
-    declare -x ip="${1%%/*}"
-    declare -x prefix="${1##*/}"
+    declare ip="${1%%/*}"
+    declare prefix="${1##*/}"
     if is_ipv6_address "$ip" && is_int "$prefix" &&
         [[ $prefix -ge 0 ]] && [[ $prefix -le 128 ]] ; then
         return 0
@@ -570,7 +570,7 @@ get_free_disk_space () {
 }
 
 get_username () {
-    declare -x user="${USER:-$LOGNAME}"
+    declare user="${USER:-$LOGNAME}"
     user="${user:-$(id -un)}"
     echo "${user:-$(whoami)}"
 }
@@ -581,8 +581,8 @@ get_gecos_name () {
 
 # https://en.wikipedia.org/wiki/Gecos_field
 get_gecos_info () {
-    declare -x key="${1:-}"
-    declare -x user="${2:-$(get_username)}"
+    declare key="${1:-}"
+    declare user="${2:-$(get_username)}"
     #while IFS=: read username passwd uid gid gecos home shell ; do
     while IFS=: read username _ _ _ gecos _ _ ; do
         if [[ "$user" = "$username" ]] ; then
@@ -620,7 +620,7 @@ is_float () { [[ "${1:-}" =~ ^[-\+]?[0-9]*\.[0-9]+$ ]]; }
 
 # Converts single argument input to an absolute value.
 abs () {
-    declare -x val="${1:-}"
+    declare val="${1:-}"
     if is_positive "$val" || is_zero "$val" ; then
         echo -n "$val"
     elif is_int "$val" ; then
@@ -654,8 +654,8 @@ to_lower () {
 # TODO(nicolaw): Should this be extended to have is_word_in_strings, and/or
 #                is/are_words_in_string variants? Would that be overkill?
 is_word_in_string () {
-    declare -x str="${1:-}"
-    declare -x re="\\b${2:-}\\b"
+    declare str="${1:-}"
+    declare re="\\b${2:-}\\b"
     [[ "$str" =~ $re ]] && return 0
     return 1
 }
@@ -663,7 +663,7 @@ is_word_in_string () {
 # Append a list of word(s) to argument1 if they are not already present as
 # distinct words.
 append_if_not_present () {
-    declare -x base_str="${1:-}"; shift
+    declare base_str="${1:-}"; shift
     for add_str in "$@" ; do
         if ! matches_word "$base_str" "$add_str" ; then
             base_str="${base_str} ${add_str}"
