@@ -43,9 +43,11 @@ main () {
 
     # We should sign stuff if we're the author.
     declare rpmbuild_extra_args
+    declare debuild_extra_args
     declare gpg_keyid
     if [[ "$(hostid)" = "007f0101" ]] && [[ "$(get_username)" = "nicolaw" ]] ; then
         gpg_keyid="6393F646"
+        debuild_extra_args="-k${gpg_keyid}"
         rpmbuild_extra_args="--sign"
         while read -r line ; do
             if ! grep -q "^$line$" ~/.rpmmacros ; then
@@ -92,13 +94,15 @@ RPMMACROS
     if is_in_path "debuild" "dpkg-deb" ; then
         cp -v "$build_base/${pkg}-${version}.tar.gz" "$build_base/${pkg}_${version}.orig.tar.gz"
         pushd "$build_dir"
-        debuild -us -uc
+        debuild -sa ${debuild_extra_args:- -us -uc}
         popd
         pushd "$build_base"
-        if [[ -n "$gpg_keyid" ]] ; then
-            debsign -k "$gpg_keyid" "$build_base/${pkg}_${version}${release:+-$release}.dsc"
-            gpg --verify "$build_base/${pkg}_${version}${release:+-$release}.dsc"
-        fi
+        #if [[ -n "$gpg_keyid" ]] ; then
+        #    for file in "$build_base"/*.dsc "$build_base"/*.changes ; do
+        #        debsign -k "$gpg_keyid" "$file"
+        #        gpg --verify "$file"
+        #    done
+        #fi
         mv -v -- *.dsc *.changes *.build *.debian.tar.gz *.orig.tar.gz *.deb "$release_dir"
         dpkg-deb -I "$release_dir/${pkg}_${version}${release:+-$release}_all.deb"
         dpkg-deb -c "$release_dir/${pkg}_${version}${release:+-$release}_all.deb"
