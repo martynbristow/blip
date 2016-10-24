@@ -302,10 +302,10 @@ get_exclusive_execution_lock () {
     declare pid_file="${1:get_pid_lock_filename}"
     # Use prefered flock mechanism (probably under Linux).
     if is_in_path "$BLIP_EXTERNAL_CMD_FLOCK" ; then
-        :
+        : "${pid_file}"
     # Otherwise make do with mkdir method.
     else
-        :
+        : "${pid_file}"
     fi
 }
 
