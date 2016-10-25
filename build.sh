@@ -6,17 +6,19 @@
 #
 
 set -ueo pipefail
+declare -g verbose; [[ ! $- =~ [vx] ]]; verbose=${?//0/}
 shopt -s checkwinsize
 umask 0077
 
 _mark () {
-  declare msg="$*"
+  declare msg="${1:-}"
+  declare colour="${2:-yellow}"
   declare width=${COLUMNS:-80}
   declare len=$(( width - ${#msg} ))
   if [[ $len -lt $width ]] ; then
     len=$(( len - 4 ))
   fi
-  echo -n "${ANSI[bold]}${ANSI[yellow]}"
+  echo -n "${ANSI[bold]}${ANSI[$colour]}"
   printf "=%.0s" {1..5}
   echo -n "${msg:+[ $msg ]}"
   printf "=%.0s" $(seq 1 $(( len - 5 )))
@@ -24,6 +26,7 @@ _mark () {
 }
 
 _prepare_gpg_signing () {
+  _mark "_prepare_gpg_signing()" "green"
   gpg_keyid="6393F646"
   debuild_extra_args="-k${gpg_keyid} -S"
   rpmbuild_extra_args="--sign"
@@ -39,6 +42,7 @@ RPMMACROS
 }
 
 _render_documentation () {
+  _mark "_render_documentation()" "green"
   pod2man \
     --name="BLIP.BASH" \
     --release="${pkg}.bash $version" \
@@ -53,22 +57,25 @@ _render_documentation () {
 }
 
 _build_deb_packages () {
+  _mark "_build_deb_packages()" "magenta"
   _debuild () {
+    _mark "_debuild()" "magenta"
     declare release_dir="$1"
     declare debuild_extra_args="${2:-}"
     declare debian_orig_tar="${release_tarball%.tar.gz}.orig.tar.gz"
     debian_orig_tar="${debian_orig_tar//-/_}"
 
+    # TODO(nicolaw): Update the debian/changelog from git log output.
     pushd "$build_dir"
-    cp -v "$release_tarball" "$debian_orig_tar"
+    cp ${verbose:+-v} "$release_tarball" "$debian_orig_tar"
     debuild -sa ${debuild_extra_args:- -us -uc}
-    mkdir -pv "$release_dir"
-    mv -v -- "$build_base"/*.{dsc,changes,build,debian.tar.gz,orig.tar.gz} "$release_dir"
+    mkdir -p ${verbose:+-v} "$release_dir"
+    mv ${verbose:+-v} -- "$build_base"/*.{dsc,changes,build,debian.tar.gz,orig.tar.gz} "$release_dir"
     popd
 
     if stat -t "$build_base"/*.deb >/dev/null 2>&1 ; then
-      mv -v -- "$build_base"/*.deb "$release_dir"
-      _mark DEB Package Information
+      mv ${verbose:+-v} -- "$build_base"/*.deb "$release_dir"
+      _mark "DEB Package Information"
       dpkg-deb -I "$release_dir/${pkg}_${version}${release:+-$release}_all.deb"
       dpkg-deb -c "$release_dir/${pkg}_${version}${release:+-$release}_all.deb"
       _mark
@@ -80,6 +87,8 @@ _build_deb_packages () {
 }
 
 _build_rpm_packages () {
+  _mark "_build_rpm_packages()" "magenta"
+  # TODO(nicolaw): Update the %changelog from git log output.
   rpmbuild -ba "$base/${pkg}.spec" \
     ${rpmbuild_extra_args} \
     ${pkg:+--define "name $pkg"} \
@@ -88,9 +97,18 @@ _build_rpm_packages () {
     --define "_sourcedir $build_base" \
     --define "_rpmdir $release_dir" \
     --define "_build_name_fmt %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm"
-  _mark RPM Package Information
-  rpm -qlpiv "$release_dir/${pkg}-${version}${release:+-$release}.noarch.rpm"
+  _mark "RPM Package Information"
+  rpm -qlpi ${verbose:+-v} "$release_dir/${pkg}-${version}${release:+-$release}.noarch.rpm"
   _mark
+}
+
+_build_tarball () {
+  _mark "_build_tarball()" "magenta"
+  rm -Rf ${verbose:+-v} --one-file-system --preserve-root "$build_base"
+  mkdir -p ${verbose:+-v} "$build_dir" "$release_dir"
+  rsync -a ${verbose:+-v} --exclude=".*" --exclude="build/" --exclude="release/" "${base%/}/" "${build_dir%}/"
+  tar -C "$build_base" ${verbose:+-v} -zcf "$release_tarball" "${build_dir##*/}/"
+  cp ${verbose:+-v} "$release_tarball" "$release_dir"
 }
 
 main () {
@@ -103,7 +121,15 @@ main () {
   BLIP_ANSI_VARIABLES=true
   source "$base/${pkg}.bash"
 
-  # TODO(nicolaw): Pull version information from git tags instead.
+  # git tag -u 6393F646 -a v0.3-1 -m 'Initial successful LaunchPad PPA submission' 7947d41
+  # git config --global user.signingkey "6393F646"
+  # git --no-pager log v0.3-1..HEAD --pretty --format='%cD,%cn,%ce,%h,"%s","%d"'
+  # git --no-pager log  --pretty --format='%cD,%cn,%ce,%h,"%s","%d"'
+  # git tag -l -n9
+  # git tag -l 
+
+  # TODO(nicolaw): Pull version information from the current git tag.
+  #                A git tag of HEAD should be regarded as UNRELEASED.
   declare dch_version_full
   dch_version_full="$(egrep -o "^${pkg} \([0-9]+\.[0-9]+(-[0-9]+)?\) " "$base/debian/changelog" | egrep -o '[0-9]+\.[0-9]+(-[0-9]+)?' | head -1)"
   declare dch_version="${dch_version_full%-*}"
@@ -133,11 +159,7 @@ main () {
   _render_documentation
 
   # Build tarball.
-  rm -Rfv --one-file-system --preserve-root "$build_base"
-  mkdir -pv "$build_dir" "$release_dir"
-  rsync -av --exclude=".*" --exclude="build/" --exclude="release/" "${base%/}/" "${build_dir%}/"
-  tar -C "$build_base" -zcvf "$release_tarball" "${build_dir##*/}/"
-  cp -v "$release_tarball" "$release_dir"
+  _build_tarball
 
   # Build Deb package.
   if is_in_path "debuild" "dpkg-deb" ; then
