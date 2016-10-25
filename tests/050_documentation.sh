@@ -19,8 +19,10 @@ test_050_documentation () {
   # Check blip(3) man page is a similar age to the pod.
   declare -i pod_age
   declare -i man3_age
+  # shellcheck disable=SC2034
   pod_age="$(get_file_age "$pod")"
   assert "echo $?" 0
+  # shellcheck disable=SC2034
   man3_age="$(get_file_age "$man3")"
   assert "echo $?" 0
   # shellcheck disable=SC2016
