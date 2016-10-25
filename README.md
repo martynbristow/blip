@@ -28,7 +28,48 @@ examples and other useful information.
 * <https://nicolaw.uk/blip>
 * <https://github.com/neechbear/blip/>
   * <https://github.com/neechbear/blip/releases>
+  * <https://launchpad.net/~nicolaw/+archive/ubuntu/blip>
+  * <http://ppa.launchpad.net/nicolaw/blip/ubuntu/>
   * <https://raw.githubusercontent.com/neechbear/blip/master/blip.bash>
+
+## Installation
+
+### Ubuntu
+
+On Ubuntu, you can install from my PPA
+[ppa:nicolaw/blip](https://launchpad.net/~nicolaw/+archive/ubuntu/blip)
+by running the following commands:
+
+```
+sudo add-apt-repository ppa:nicolaw/blip
+sudo apt-get update
+sudo apt-get install blip
+```
+
+### Debian
+
+On Debian or other Debian-based distributions, you can
+[download the DEB package from GitHub](https://github.com/neechbear/blip/releases)
+and install it manually with:
+
+```
+curl -o https://github.com/neechbear/blip/releases/download/path/to/blip_pkg.deb
+sudo dpkg -i blip_pkg.deb
+```
+
+### RedHat, CentOS, Fedora
+
+Similarly for RedHat based distributions you can
+[install the RPM package from GitHub](https://github.com/neechbear/blip/releases)
+manually with:
+
+```
+sudo yum localinstall https://github.com/neechbear/blip/releases/download/path/to/blip_pkg.rpm
+```
+
+### Source
+
+//Write instructions for installation from GitHub or source tarball here.//
 
 ## TODO
 
