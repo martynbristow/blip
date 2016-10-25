@@ -2,6 +2,8 @@
 
 # TODO(nicolaw): Actually write unit tests for all these things!
 
+# assert is_newer_version
+# assert required_command_version
 # assert append_if_not_present
 # assert append_trap
 # assert execute_trap_stack
