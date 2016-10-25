@@ -1,4 +1,4 @@
-blip (0.1-4) UNRELEASED; urgency=low
+blip (0.1-4) trusty; urgency=low
 
   * Additional documentation.
   * Added many unit tests.
