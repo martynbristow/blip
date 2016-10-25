@@ -52,6 +52,10 @@ Alias for C<abs ()>.
 
 =head2 trim ()
 
+=head2 is_newer_version ()
+
+=head2 required_command_version ()
+
 =head2 append_trap "$ACTION" "$SIGNALn" ...
 
 =head2 execute_trap_stack "$SIGNAL"
