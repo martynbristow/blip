@@ -47,7 +47,7 @@ main () {
     declare gpg_keyid
     if [[ "$(hostid)" = "007f0101" ]] && [[ "$(get_username)" = "nicolaw" ]] ; then
         gpg_keyid="6393F646"
-        debuild_extra_args="-k${gpg_keyid}"
+        debuild_extra_args="-k${gpg_keyid} -S"
         rpmbuild_extra_args="--sign"
         while read -r line ; do
             if ! grep -q "^$line$" ~/.rpmmacros ; then
@@ -92,26 +92,31 @@ RPMMACROS
 
     # Build Deb package.
     if is_in_path "debuild" "dpkg-deb" ; then
-        cp -v "$build_base/${pkg}-${version}.tar.gz" "$build_base/${pkg}_${version}.orig.tar.gz"
+        _build_deb () {
+            declare release_dir="$1"
+            declare debuild_extra_args="${2:-}"
+
+            cp -v "$build_base/${pkg}-${version}.tar.gz" "$build_base/${pkg}_${version}.orig.tar.gz"
+            debuild -sa ${debuild_extra_args:- -us -uc}
+            mkdir -pv "$release_dir"
+            mv -v -- "$build_base"/*.{dsc,changes,build,debian.tar.gz,orig.tar.gz} "$release_dir"
+
+            if stat -t "$release_dir"/*.deb >/dev/null ; then
+                mv -v -- "$build_base"/*.deb "$release_dir"
+                dpkg-deb -I "$release_dir/${pkg}_${version}${release:+-$release}_all.deb"
+                dpkg-deb -c "$release_dir/${pkg}_${version}${release:+-$release}_all.deb"
+            fi
+        }
+
         pushd "$build_dir"
-        debuild -sa ${debuild_extra_args:- -us -uc}
-        popd
-        pushd "$build_base"
-        #if [[ -n "$gpg_keyid" ]] ; then
-        #    for file in "$build_base"/*.dsc "$build_base"/*.changes ; do
-        #        debsign -k "$gpg_keyid" "$file"
-        #        gpg --verify "$file"
-        #    done
-        #fi
-        mv -v -- *.dsc *.changes *.build *.debian.tar.gz *.orig.tar.gz *.deb "$release_dir"
-        dpkg-deb -I "$release_dir/${pkg}_${version}${release:+-$release}_all.deb"
-        dpkg-deb -c "$release_dir/${pkg}_${version}${release:+-$release}_all.deb"
+        _build_deb "$release_dir"
+        [[ -n "$debuild_extra_args" ]] && _build_deb "$release_dir/deb-src/" "$debuild_extra_args"
         popd
     fi
 
     # Build RPM package.
     if is_in_path "rpmbuild" "rpm" ; then
-        rpmbuild -ba "${pkg}.spec" \
+        rpmbuild -ba "$base/${pkg}.spec" \
             ${rpmbuild_extra_args} \
             ${pkg:+--define "name $pkg"} \
             ${version:+--define "version $version"} \
@@ -128,7 +133,7 @@ RPMMACROS
     fi
 
     # List the resulting release package files.
-    ls --color -la "$release_dir"
+    ls --color -Rla "$release_dir"
 }
 
 main "$@"
