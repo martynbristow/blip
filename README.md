@@ -69,7 +69,7 @@ sudo yum localinstall https://github.com/neechbear/blip/releases/download/path/t
 
 ### Source
 
-//Write instructions for installation from GitHub or source tarball here.//
+_Write instructions for installation from GitHub or source tarball here._
 
 ## TODO
 
