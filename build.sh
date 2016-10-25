@@ -99,6 +99,7 @@ main () {
   declare pkg="blip"
 
   [[ -e "$base/${pkg}.bash" ]]
+  # shellcheck disable=SC2034
   BLIP_ANSI_VARIABLES=true
   source "$base/${pkg}.bash"
 
