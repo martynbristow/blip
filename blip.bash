@@ -272,7 +272,29 @@ get_trap_stack () {
                 fi
             done
         fi 
+    return 0
     done
+}
+
+is_newer_version () {
+    declare lhs_version="${1:-}"
+    declare rhs_version="${2:-}"
+    declare -a lhs=( ${lhs_version//./ } )
+    declare -a rhs=( ${rhs_version//./ } )
+    declare -i i=0
+    for ((i = 0; i < ${#lhs[@]}; i++)) ; do
+        if ! [[ ${rhs[$i]:-} -ge ${lhs[$i]} ]] ; then
+            return 1
+        fi
+    done
+    return 0
+}
+
+required_command_version () {
+    declare command="$1"
+    declare check_version="$2"
+    declare version_command="${3:-${command} --version}"
+    is_newer_version "$check_version" "$($version_command 2>&1 | egrep -ow '[0-9]+\.[0-9\.]+' | tail -n1)"
 }
 
 get_pid_lock_filename () {
