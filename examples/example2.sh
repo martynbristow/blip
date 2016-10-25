@@ -5,10 +5,11 @@
 
 set -euo pipefail
 
+# shellcheck disable=SC2034
 BLIP_ANSI_VARIABLES=1
+# shellcheck disable=SC2034
 BLIP_REQUIRE_VERSION="0.01-3"
 source "${BASH_SOURCE[0]%/*}/../blip.bash"
-BLIP_DEBUG_LOGLEVEL=3
 
 compgen -A variable | grep ANSI
 echo "${!ANSI[@]}"
