@@ -1,3 +1,25 @@
+blip (0.3-1) trusty; urgency=low
+
+  * Fixed build dependencies.
+  * Skip network based unit tests when curl is unable to probe test URL.
+
+ -- Nicola Worthington <nicolaw@bran.mlt.tfb.net>  Tue, 25 Oct 2016 21:28:45 +0100
+
+blip (0.2-1) trusty; urgency=low
+
+  * Build script changes for LaunchPad packaging guidelines.
+  * Added is_newer_version() function.
+  * Added required_command_version() function.
+
+ -- Nicola Worthington <nicolaw@bran.mlt.tfb.net>  Tue, 25 Oct 2016 20:10:17 +0100
+
+blip (0.1-4~ubuntu1) trusty; urgency=low
+
+  * Fixed package dependencies to more accurately reflect BLIP_EXTERNAL_CMD*
+    requirements.
+
+ -- Nicola Worthington <nicolaw@bran.mlt.tfb.net>  Tue, 25 Oct 2016 09:45:55 +0100
+
 blip (0.1-4) trusty; urgency=low
 
   * Additional documentation.
