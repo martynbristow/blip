@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/neechbear/blip.svg?branch=master)](https://travis-ci.org/neechbear/blip)
 [![Code Climate](https://codeclimate.com/github/neechbear/blip/badges/gpa.svg)](https://codeclimate.com/github/neechbear/blip)
 [![Issue Count](https://codeclimate.com/github/neechbear/blip/badges/issue_count.svg)](https://codeclimate.com/github/neechbear/blip)
-[![Pre-release Alpha](https://img.shields.io/badge/status-pre--release%20alpha-ff69b4.svg)](https://nicolaw.uk/blip)
+[![Pre-release Alpha](https://img.shields.io/badge/status-alpha-ff69b4.svg)](https://nicolaw.uk/blip)
 
 # blip - Bash Library for Indolent Programmers
 
