@@ -7,5 +7,6 @@ Build-Depends: debhelper (>= 9)
 
 Package: blip
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, bc, grep, coreutils, curl
+Recommends: util-linux
 Description: Bash Library for Indolent Programmers
