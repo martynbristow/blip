@@ -30,7 +30,7 @@ test_090_filesystem () {
     result1="$(get_file_age /tmp/foo1)"
     _blip_test_stat_unixtime=1470010000
     result2="$(get_file_age /tmp/foo2)"
-    assert_raises "[[ $(( result1 - result2 )) -eq 10000 ]]" 0
+    assert_raises "[[ $(( result1 - result2 )) -ge 10000 ]] && [[ $(( result1 - result2 )) -le 10005 ]]" 0
 
     BLIP_EXTERNAL_CMD_STAT="$_old_stat_cmd"
 
