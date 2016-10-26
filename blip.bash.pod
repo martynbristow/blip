@@ -104,6 +104,14 @@ See also: C<select> bash built-in.
 
 See also: C<select> bash built-in.
 
+=head2 as_json_string ()
+
+=head2 as_json_value ()
+
+=head2 get_variable_type ()
+
+=head2 vars_as_json ()
+
 =head2 is_abs_int ()
 
 =head2 is_absolute_integer ()
