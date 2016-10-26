@@ -1,3 +1,12 @@
+blip (0.4-1) trusty; urgency=low
+
+  * Build script builds deb and rpm changelogs from git log output.
+  * Build script uses git tags as release version identifiers.
+  * Build script verbosity made configurable.
+  * Added json string and object output functions.
+
+ -- Nicola Worthington <nicolaw@bran.mlt.tfb.net>  Wed, 26 Oct 2016 00:01:58 +0100
+
 blip (0.3-1) trusty; urgency=low
 
   * Fixed build dependencies.
