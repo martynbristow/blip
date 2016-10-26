@@ -2,6 +2,10 @@
 
 # TODO(nicolaw): Actually write unit tests for all these things!
 
+# assert as_json_string
+# assert as_json_value
+# assert get_variable_type
+# assert vars_as_json
 # assert is_newer_version
 # assert required_command_version
 # assert append_if_not_present
