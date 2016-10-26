@@ -79,11 +79,11 @@ fi
 # TODO(nicolaw): Work out how to automatically populate these values at build
 #                and release (packaging) time.
 if [[ -z "${BLIP_VERSION:+defined}" ]] ; then
-    declare -rxg BLIP_VERSION="0.1-4-prerelease"
-    declare -rxga BLIP_VERSINFO=("0" "1" "4" "prerelease")
+    declare -rxg BLIP_VERSION="0.4-1-alpha"
+    declare -rxga BLIP_VERSINFO=("0" "4" "1" "alpha")
 else
     echo "blip.bash version $BLIP_VERSION is already loaded." >&2
-    if ! [[ "$BLIP_VERSION" = "0.1-4-prerelease" ]] ; then
+    if ! [[ "$BLIP_VERSION" = "0.4-1-alpha" ]] ; then
         echo "Reloading conflicting versions of blip.bash over each" \
             "other may result in unpredictable behaviour!" >&2
     fi
@@ -151,29 +151,29 @@ declare -gxA BLIP_TRAP_MAP=() # Maps BLIP_TRAP_STACK indexes to signals
 # http://stackoverflow.com/questions/16115144/bash-save-and-restore-trap-state-easy-way-to-manage-multiple-handlers-for-trap
 
 append_trap () {
-    declare action="${1:-}"; shift
-    [[ -z "$action" ]] && return
-    declare sig
-    for sig in "$@" ; do
-        trap -- "$(
-                _get_existing_action() { printf "%s${3+\n}" "${3:-}"; }
-                eval "_get_existing_action $(trap -p "$sig")"
-                printf '%s\n' "$action"
-            )" "$sig"
-    done
+  declare action="${1:-}"; shift
+  [[ -z "$action" ]] && return
+  declare sig
+  for sig in "$@" ; do
+    trap -- "$(
+          _get_existing_action() { printf "%s${3+\n}" "${3:-}"; }
+          eval "_get_existing_action $(trap -p "$sig")"
+          printf '%s\n' "$action"
+        )" "$sig"
+  done
 }
 declare -ft append_trap
 
 execute_trap_stack () {
-    declare sig
-    for sig in "$@" ; do
-        if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
-            declare -i idx
-            for idx in ${BLIP_TRAP_MAP[$sig]} ; do
-                eval "${BLIP_TRAP_STACK[$idx]}"
-            done
-        fi 
-    done
+  declare sig
+  for sig in "$@" ; do
+    if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
+      declare -i idx
+      for idx in ${BLIP_TRAP_MAP[$sig]} ; do
+        eval "${BLIP_TRAP_STACK[$idx]}"
+      done
+    fi
+  done
 }
 
 push_trap_stack () {
@@ -214,80 +214,170 @@ push_trap_stack () {
 }
 
 pop_trap_stack () {
-    declare sig
-    for sig in "$@" ; do
-        if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
-            declare -a map=(${BLIP_TRAP_MAP[$sig]})
-            declare -i idx=${map[-1]}
-            BLIP_TRAP_STACK[$idx]=""
-            unset map[${#map[@]}-1]
-            BLIP_TRAP_MAP[$sig]="${map[*]}"
-        fi 
+  declare sig
+  for sig in "$@" ; do
+    if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
+      declare -a map=(${BLIP_TRAP_MAP[$sig]})
+      declare -i idx=${map[-1]}
+      BLIP_TRAP_STACK[$idx]=""
+      unset map[${#map[@]}-1]
+      BLIP_TRAP_MAP[$sig]="${map[*]}"
+    fi
 
-        if [[ $BLIP_DEBUG_LOGLEVEL -ge 1 ]] ; then
-            echo "\$BLIP_TRAP_MAP[$sig]=${BLIP_TRAP_MAP[$sig]:-}"
-            declare -i i
-            for ((i = 0; i < ${#BLIP_TRAP_STACK[@]}; i++)) ; do
-                echo "\$BLIP_TRAP_STACK[$i]=${BLIP_TRAP_STACK[$i]:-}"
-            done
-        fi
-        if [[ $BLIP_DEBUG_LOGLEVEL -ge 3 ]] ; then
-            trap -p "$sig" || true
-        fi
-    done
+    if [[ $BLIP_DEBUG_LOGLEVEL -ge 1 ]] ; then
+      echo "\$BLIP_TRAP_MAP[$sig]=${BLIP_TRAP_MAP[$sig]:-}"
+      declare -i i
+      for ((i = 0; i < ${#BLIP_TRAP_STACK[@]}; i++)) ; do
+        echo "\$BLIP_TRAP_STACK[$i]=${BLIP_TRAP_STACK[$i]:-}"
+      done
+    fi
+    if [[ $BLIP_DEBUG_LOGLEVEL -ge 3 ]] ; then
+      trap -p "$sig" || true
+    fi
+  done
 }
 
 set_trap_stack () {
-    declare action="${1:-}"; shift
-    [[ -z "$action" ]] && return
-
-    declare sig
-    for sig in "$@" ; do
-        unset_trap_stack "$sig"
-        push_trap_stack "$action" "$sig"
-    done
+  declare action="${1:-}"; shift
+  [[ -z "$action" ]] && return
+  declare sig
+  for sig in "$@" ; do
+    unset_trap_stack "$sig"
+    push_trap_stack "$action" "$sig"
+  done
 }
 
 unset_trap_stack () {
-    declare sig
-    for sig in "$@" ; do
-        if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
-            declare -i idx
-            for idx in ${BLIP_TRAP_MAP[$sig]} ; do
-                BLIP_TRAP_STACK[$idx]=""
-            done
-            unset BLIP_TRAP_MAP[$sig]
-        fi 
-    done
+  declare sig
+  for sig in "$@" ; do
+    if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
+      declare -i idx
+      for idx in ${BLIP_TRAP_MAP[$sig]} ; do
+        BLIP_TRAP_STACK[$idx]=""
+      done
+      unset BLIP_TRAP_MAP[$sig]
+    fi
+  done
 }
 
 get_trap_stack () {
-    declare sig
-    for sig in "$@" ; do
-        if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
-            declare -i idx
-            for idx in ${BLIP_TRAP_MAP[$sig]} ; do
-                if [[ -n "${BLIP_TRAP_STACK[$idx]:-}" ]] ; then
-                    printf '%s\n' "${BLIP_TRAP_STACK[$idx]:-}"
-                fi
-            done
-        fi 
+  declare sig
+  for sig in "$@" ; do
+    if [[ -n "${BLIP_TRAP_MAP[$sig]:-}" ]] ; then
+      declare -i i
+      for i in ${BLIP_TRAP_MAP[$sig]} ; do
+        if [[ -n "${BLIP_TRAP_STACK[$i]:-}" ]] ; then
+          printf '%s\n' "${BLIP_TRAP_STACK[$i]:-}"
+        fi
+      done
+    fi
     return 0
-    done
+  done
+}
+
+get_variable_type () {
+  declare vtype="$(declare -p "$1" 2>/dev/null)"
+  vtype="${vtype#* -}"
+  printf '%s' "${vtype%% *}"
+}
+
+as_json_value () {
+  if [[ ! -n "${1+defined}" ]] ; then
+    # null.
+    printf 'null'
+  elif [[ "$1" = "true" || "$1" = "false" ]] ; then
+    # Boolean.
+    printf '%s' "$1"
+  elif [[ "$1" =~ ^-?([1-9][0-9]*|0)(\.[0-9]+)?$ ]] ; then
+    # TODO(nicolaw): Allow support for exponential E notation.
+    # Number.
+    printf '%s' "$1"
+  else
+    # String.
+    printf '"%s"' "$(as_json_string "$1")"
+  fi
+}
+
+as_json_string () {
+  declare str="$1"
+  # shellcheck disable=SC1003
+  declare -a shell=(        '\'  '"'  $'\b' $'\f' $'\n' $'\r' $'\t' )
+  declare -a json_escaped=( '\\' '\"'  '\b'  '\f'  '\n'  '\r'  '\t' )
+  declare -i i
+  for i in "${!shell[@]}"; do
+    str="${str//"${shell[${i}]}"/${json_escaped[${i}]}}"
+  done
+  printf '%s' "$str"
+}
+
+# vars_as_json $(compgen -v BASH)
+vars_as_json () {
+  declare format='"%s": %s'
+  printf '{'
+  while [[ $# -ge 1 ]] ; do
+    declare vtype="$(get_variable_type "$1")"
+    declare i
+
+    if [[ $vtype == *"a"* ]] ; then
+      # Array.
+      declare tmp_indirection="${1}[@]"
+      declare -a tmp_array=( "${!tmp_indirection}" )
+      # shellcheck disable=SC2059
+      printf "$format" "$1" '['
+      for i in "${!tmp_array[@]}" ; do
+        printf '%s' "$(as_json_value ${tmp_array[$i]+"${tmp_array[$i]}"})"
+        if [[ $i -lt ${#tmp_array} ]] ; then
+          printf ', '
+        fi
+      done
+      printf ']'
+
+    elif [[ $vtype == *"A"* ]] ; then
+      # Associative array / object.
+      declare tmp_indirection="$(declare -p "$1")"
+      eval "declare -A tmp_dict=${tmp_indirection#*=}"
+      if [[ $BLIP_DEBUG_LOGLEVEL -ge 3 ]] ; then
+        declare -p "tmp_dict" >&2 || :
+        echo "tmp_dict keys=${!tmp_dict[@]}" >&2
+        echo "tmp_dict values=${tmp_dict[@]}" >&2
+      fi
+      # shellcheck disable=SC2059
+      printf "$format" "$1" '{'
+      for i in "${!tmp_dict[@]}" ; do
+        # shellcheck disable=SC2059,SC2086
+        printf "$format" "$i" "$(as_json_value ${tmp_dict[$i]+"${tmp_dict[$i]}"})"
+        if [[ $i -lt ${#tmp_dict} ]] ; then
+          printf ', '
+        fi
+      done
+      printf '}'
+
+    else
+      # Number, string, boolean, null.
+      # shellcheck disable=SC2059,SC2086
+      printf "$format" "$1" "$(as_json_value ${!1:+"${!1}"})"
+    fi
+
+    if [[ $# -gt 1 ]] ; then
+      printf ', '
+    fi
+    shift
+  done
+  printf '}\n'
 }
 
 is_newer_version () {
-    declare lhs_version="${1:-}"
-    declare rhs_version="${2:-}"
-    declare -a lhs=( ${lhs_version//./ } )
-    declare -a rhs=( ${rhs_version//./ } )
-    declare -i i=0
-    for ((i = 0; i < ${#lhs[@]}; i++)) ; do
-        if ! [[ ${rhs[$i]:-} -ge ${lhs[$i]} ]] ; then
-            return 1
-        fi
-    done
-    return 0
+  declare lhs_version="${1:-}"
+  declare rhs_version="${2:-}"
+  declare -a lhs=( ${lhs_version//./ } )
+  declare -a rhs=( ${rhs_version//./ } )
+  declare -i i
+  for i in "${!lhs[@]}" ; do
+    if ! [[ ${rhs[$i]:-} -ge ${lhs[$i]} ]] ; then
+      return 1
+    fi
+  done
+  return 0
 }
 
 required_command_version () {
