@@ -316,7 +316,6 @@ vars_as_json () {
   printf '{'
   while [[ $# -ge 1 ]] ; do
     declare vtype="$(get_variable_type "$1")"
-    declare i
 
     if [[ $vtype == *"a"* ]] ; then
       # Array.
@@ -324,6 +323,7 @@ vars_as_json () {
       declare -a tmp_array=( "${!tmp_indirection}" )
       # shellcheck disable=SC2059
       printf "$format" "$1" '['
+      declare -i i
       for i in "${!tmp_array[@]}" ; do
         printf '%s' "$(as_json_value ${tmp_array[$i]+"${tmp_array[$i]}"})"
         if [[ $i -lt ${#tmp_array} ]] ; then
@@ -335,22 +335,31 @@ vars_as_json () {
     elif [[ $vtype == *"A"* ]] ; then
       # Associative array / object.
       declare tmp_indirection="$(declare -p "$1")"
-      eval "declare -A tmp_dict=${tmp_indirection#*=}"
+      unset __blip_tmp_dict
+      # Even though this declare works exactly as-is on the command line, even
+      # including all the indirection, it doesn't appear to properly work here.
+      # We appear to be able to get the values out of the dict, but not the
+      # keys, and not print it's declare statement etc.
+      eval "declare -A __blip_tmp_dict=${tmp_indirection#*=}"
       if [[ $BLIP_DEBUG_LOGLEVEL -ge 3 ]] ; then
-        declare -p "tmp_dict" >&2 || :
-        echo "tmp_dict keys=${!tmp_dict[@]}" >&2
-        echo "tmp_dict values=${tmp_dict[@]}" >&2
+        declare -p "__blip_tmp_dict" >&2 || :
+        echo "__blip_tmp_dict keys=${!__blip_tmp_dict[@]}" >&2
+        echo "__blip_tmp_dict values=${__blip_tmp_dict[@]}" >&2
       fi
       # shellcheck disable=SC2059
       printf "$format" "$1" '{'
-      for i in "${!tmp_dict[@]}" ; do
+      declare -i i=0
+      declare k
+      for k in "${!__blip_tmp_dict[@]}" ; do
         # shellcheck disable=SC2059,SC2086
-        printf "$format" "$i" "$(as_json_value ${tmp_dict[$i]+"${tmp_dict[$i]}"})"
-        if [[ $i -lt ${#tmp_dict} ]] ; then
+        printf "$format" "$i" "$(as_json_value ${__blip_tmp_dict[$i]+"${__blip_tmp_dict[$i]}"})"
+        if [[ $k -lt ${#__blip_tmp_dict[@]} ]] ; then
           printf ', '
         fi
+        let i++
       done
       printf '}'
+      unset __blip_tmp_dict
 
     else
       # Number, string, boolean, null.
