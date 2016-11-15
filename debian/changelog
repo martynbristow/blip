@@ -1,18 +1,18 @@
 blip (0.4-1) trusty; urgency=low
 
-  * Build script builds deb and rpm changelogs from git log output.
-  * Build script uses git tags as release version identifiers.
   * Build script verbosity made configurable.
+  * Build script tages version and release information from git repo tag.
   * Added json string and object output functions.
+  * Bug fix in url_exists with file:// shemes.
 
- -- Nicola Worthington <nicolaw@bran.mlt.tfb.net>  Wed, 26 Oct 2016 00:01:58 +0100
+ -- Nicola Worthington <nicolaw@tfb.net>  Tue, 15 Nov 2016 18:19:58 +0100
 
 blip (0.3-1) trusty; urgency=low
 
   * Fixed build dependencies.
   * Skip network based unit tests when curl is unable to probe test URL.
 
- -- Nicola Worthington <nicolaw@bran.mlt.tfb.net>  Tue, 25 Oct 2016 21:28:45 +0100
+ -- Nicola Worthington <nicolaw@tfb.net>  Tue, 25 Oct 2016 21:28:45 +0100
 
 blip (0.2-1) trusty; urgency=low
 
@@ -20,14 +20,14 @@ blip (0.2-1) trusty; urgency=low
   * Added is_newer_version() function.
   * Added required_command_version() function.
 
- -- Nicola Worthington <nicolaw@bran.mlt.tfb.net>  Tue, 25 Oct 2016 20:10:17 +0100
+ -- Nicola Worthington <nicolaw@tfb.net>  Tue, 25 Oct 2016 20:10:17 +0100
 
 blip (0.1-4~ubuntu1) trusty; urgency=low
 
   * Fixed package dependencies to more accurately reflect BLIP_EXTERNAL_CMD*
     requirements.
 
- -- Nicola Worthington <nicolaw@bran.mlt.tfb.net>  Tue, 25 Oct 2016 09:45:55 +0100
+ -- Nicola Worthington <nicolaw@tfb.net>  Tue, 25 Oct 2016 09:45:55 +0100
 
 blip (0.1-4) trusty; urgency=low
 

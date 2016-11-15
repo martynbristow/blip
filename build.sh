@@ -107,6 +107,12 @@ _build_tarball () {
   rm -Rf ${verbose:+-v} --one-file-system --preserve-root "$build_base"
   mkdir -p ${verbose:+-v} "$build_dir" "$release_dir"
   rsync -a ${verbose:+-v} --exclude=".*" --exclude="build/" --exclude="release/" "${base%/}/" "${build_dir%}/"
+
+  sed -ie "s/%VERSION_MAJOR%/$version_major/g" "${build_dir%}/${pkg}.bash"
+  sed -ie "s/%VERSION_MINOR%/$version_minor/g" "${build_dir%}/${pkg}.bash"
+  sed -ie "s/%VERSION_RELEASE%/$release/g" "${build_dir%}/${pkg}.bash"
+  sed -ie "s/%VERSION_TAG%/$version_tag/g" "${build_dir%}/${pkg}.bash"
+
   tar -C "$build_base" ${verbose:+-v} -zcf "$release_tarball" "${build_dir##*/}/"
   cp ${verbose:+-v} "$release_tarball" "$release_dir"
 }
@@ -121,6 +127,10 @@ main () {
   BLIP_ANSI_VARIABLES=true
   source "$base/${pkg}.bash"
 
+  # https://github.com/akesterson/versioners/blob/master/gitversion.sh
+  # https://github.com/akesterson/cmdarg/blob/master/Makefile
+  # https://github.com/shazow/ssh-chat/blob/master/Makefile
+  # git describe --tags --dirty --always 2> /dev/null || echo "dev"
   # git tag -u 6393F646 -a v0.3-1 -m 'Initial successful LaunchPad PPA submission' 7947d41
   # git config --global user.signingkey "6393F646"
   # git --no-pager log v0.3-1..HEAD --pretty --format='%cD,%cn,%ce,%h,"%s","%d"'
@@ -129,17 +139,26 @@ main () {
   # git tag -l 
 
   # TODO(nicolaw): Pull version information from the current git tag.
-  #                A git tag of HEAD should be regarded as UNRELEASED.
-  declare dch_version_full
-  dch_version_full="$(egrep -o "^${pkg} \([0-9]+\.[0-9]+(-[0-9]+)?\) " "$base/debian/changelog" | egrep -o '[0-9]+\.[0-9]+(-[0-9]+)?' | head -1)"
-  declare dch_version="${dch_version_full%-*}"
-  declare dch_release="${dch_version_full#*-}"
-  declare version="${1:-$dch_version}"
-  declare release="${2:-$dch_release}"
-  release="${release:-1}"
-
-  [[ "$version" =~ ^[0-9]+\.[0-9]+$ ]]
-  is_abs_int "$release"
+  #                A git tag of HEAD, dirty, or release (number of additional
+  #                commits past the tag) greater than one should be regarded
+  #                as UNRELEASED.
+  declare git_version=""
+  git_version="$(git describe --tags --dirty=-dirty --always 2> /dev/null)"
+  if [[ "$git_version" =~ ^v(([0-9]+)\.([0-9]+))(-([0-9]+))-g([a-f0-9]{7})?(-dirty)?$ ]] ; then
+    declare version="${BASH_REMATCH[1]}"
+    declare version_major="${BASH_REMATCH[2]}"
+    declare version_minor="${BASH_REMATCH[3]}"
+    declare release="${BASH_REMATCH[5]:-0}"
+    declare version_tag="${BASH_REMATCH[6]}"
+    declare dirty="${BASH_REMATCH[7]+dirty}"
+  else
+    >&2 echo -e "\e[0;1;31mUnknown git tag format '$git_version'; aborting!\e[0m"
+    return 1
+  fi
+  if [[ $release -gt 0 || -n "$dirty" ]] ; then
+    >&2 echo -e "\e[0;1;33mRefusing to build for dirty or non-release tag; aborting!\e[0m"
+    return 1
+  fi
 
   # Declare build and release paths.
   declare build_base="$base/build"
