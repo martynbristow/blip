@@ -241,7 +241,7 @@ main () {
   GIT_DIR="${GIT_DIR:-.git}"
   GIT_TOPLEVEL="$(git rev-parse --show-toplevel)" 
   BRANCH="${BRANCH:-$(git_branch)}"
-  DIRTY="$(git_isdirty)"
+  DIRTY="$(git_isdirty)" || :
 
   if [[ -z "${NO_SOURCE:-}" ]] ; then
     SOURCE="$(git_source)"
