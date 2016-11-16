@@ -1,6 +1,6 @@
 ---
 language: bash
-script: build.sh
+script: ./build.sh
 dist: trusty
 os: linux
 addons:
