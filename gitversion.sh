@@ -173,15 +173,21 @@ $output"
     local tag="$last"
     if [[ "$tag" == "HEAD" ]] ; then
       tag="$first"
-      local dirty_suffix="${TAG_CHANGES:-0}"
+    fi
+    if [[ "$tag" == "HEAD" || "$tag" == "$TAG" ]] && [[ -n "$DIRTY" ]] ; then
+      local dirty_suffix="${DIRTY_SUFFIX:-}"
     fi
 
-    git_tag_bash_rematch "$tag" || :
-    local version="${BASH_REMATCH[1]}"
-    local version_major="${BASH_REMATCH[2]}"
-    local version_minor="${BASH_REMATCH[3]}"
-    local version_point="${BASH_REMATCH[5]}"
-    local version_release="${BASH_REMATCH[7]:-0}"
+    if git_tag_bash_rematch "$tag" ; then
+      local version="${BASH_REMATCH[1]}"
+      local version_major="${BASH_REMATCH[2]}"
+      local version_minor="${BASH_REMATCH[3]}"
+      local version_point="${BASH_REMATCH[5]}"
+      local version_release="${BASH_REMATCH[7]}"
+    else
+      >&2 echo "Unable to extract version information for git tag $tag; aborting!"
+      exit 99
+    fi
 
     case "${logtype:-}" in
       debian|ubuntu|dch|deb)
@@ -198,7 +204,7 @@ $output"
         fi
 
         printf '%s (%s) %s; urgency=%s\n\n' \
-          "$PKG_NAME" "$version${dirty_suffix:+-$dirty_suffix}" "$os_distribution" "$urgency"
+          "$PKG_NAME" "$version${dirty_suffix:-}" "$os_distribution" "$urgency"
         git log --format="format:  * %s" "${first:+$first..}${last}" | cat
         git log -1 \
           --format="format:%n%n -- %aN <%aE>  %aD" \
@@ -207,7 +213,7 @@ $output"
 
       redhat|rhel|centos|fedora|rpm)
         git log -1 \
-          --format="format:* @%ad@ %aN <%aE> - $VERSION${dirty_suffix:+-$dirty_suffix}%n" \
+          --format="format:* @%ad@ %aN <%aE> - $version${dirty_suffix:-}%n" \
           --date=raw \
           "${last}" \
             | perl -MPOSIX=strftime -pe \
@@ -241,7 +247,6 @@ main () {
   GIT_DIR="${GIT_DIR:-.git}"
   GIT_TOPLEVEL="$(git rev-parse --show-toplevel)" 
   BRANCH="${BRANCH:-$(git_branch)}"
-  DIRTY="$(git_isdirty)" || :
 
   if [[ -z "${NO_SOURCE:-}" ]] ; then
     SOURCE="$(git_source)"
@@ -261,7 +266,11 @@ main () {
   TAG_SHA1="$(git_longid "$TAG")"
   TAG_SHA1_SHORT="$(git_shortid "$TAG")"
 
-  TAG_CHANGES=$(changelog | wc -l)
+  TAG_CHANGES=$(git rev-list "$TAG..$COMMIT" --count)
+  DIRTY="$(git_isdirty)" || :
+  if [[ -n "$DIRTY" ]] ; then
+    DIRTY_SUFFIX="~devbuild${TAG_CHANGES:-0}"
+  fi
 
   if git_tag_bash_rematch "$TAG" ; then
     VERSION="${BASH_REMATCH[1]}"
@@ -290,7 +299,7 @@ main () {
     changelog "$LOG"
 
   else
-    for v in GIT_DIR GIT_TOPLEVEL PKG_NAME DIRTY SOURCE BRANCH \
+    for v in GIT_DIR GIT_TOPLEVEL PKG_NAME DIRTY DIRTY_SUFFIX SOURCE BRANCH \
       COMMIT COMMIT_SHA1 COMMIT_SHA1_SHORT \
       TAG TAG_SHA1 TAG_SHA1_SHORT TAG_CHANGES \
       VERSION VERSION_MAJOR VERSION_MINOR VERSION_POINT VERSION_RELEASE \

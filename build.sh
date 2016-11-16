@@ -35,8 +35,8 @@ _build_deb_packages () {
 
     if stat -t "$build_base"/*.deb >/dev/null 2>&1 ; then
       mv ${verbose:+-v} -- "$build_base"/*.deb "$release_dir"
-      dpkg-deb -I "$release_dir/${pkg}_${VERSION}${TAG_CHANGES:+-$TAG_CHANGES}_all.deb"
-      dpkg-deb -c "$release_dir/${pkg}_${VERSION}${TAG_CHANGES:+-$TAG_CHANGES}_all.deb"
+      dpkg-deb -I "$release_dir/${pkg}_${VERSION}${DIRTY_SUFFIX:+$DIRTY_SUFFIX}_all.deb"
+      dpkg-deb -c "$release_dir/${pkg}_${VERSION}${DIRTY_SUFFIX:+$DIRTY_SUFFIX}_all.deb"
     fi
   }
 
@@ -65,15 +65,15 @@ RPMMACROS
 
   rpmbuild -ba "$build_dir/${pkg}.spec" \
     ${gpg_keyid:+--sign} \
-    ${pkg:+--define "name $pkg"} \
-    ${VERSION:+--define "version $VERSION"} \
-    ${TAG_CHANGES:+--define "release $TAG_CHANGES"} \
+    --define "name $pkg" \
+    --define "version $VERSION_MAJOR.$VERSION_MINOR${VERSION_POINT:+.$VERSION_POINT}" \
+    --define "release $VERSION_RELEASE" \
     --define "_sourcedir $build_base" \
     --define "_rpmdir $release_dir" \
     --define "_build_name_fmt %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm"
 
   rpm -qlpi ${verbose:+-v} \
-    "$release_dir/${pkg}-${VERSION}${TAG_CHANGES:+-$TAG_CHANGES}.noarch.rpm"
+    "$release_dir/${pkg}-${VERSION}${DIRTY_SUFFIX:+$DIRTY_SUFFIX}.noarch.rpm"
 }
 
 _build () {
@@ -86,8 +86,8 @@ _build () {
   # Macro substitution of version information.
   sed -i -e "s/@VERSION_MAJOR@/$VERSION_MAJOR/g" "${build_dir%}/${pkg}.bash.in"
   sed -i -e "s/@VERSION_MINOR@/$VERSION_MINOR/g" "${build_dir%}/${pkg}.bash.in"
-  sed -i -e "s/@VERSION_RELEASE@/$TAG_CHANGES/g" "${build_dir%}/${pkg}.bash.in"
-  sed -i -e "s/@VERSION_TAG@/$TAG_SHA1_SHORT/g" "${build_dir%}/${pkg}.bash.in"
+  sed -i -e "s/@VERSION_RELEASE@/$VERSION_RELEASE/g" "${build_dir%}/${pkg}.bash.in"
+  sed -i -e "s/@VERSION_TAG@/$TAG_SHA1_SHORT${DIRTY_SUFFIX:+$DIRTY_SUFFIX}/g" "${build_dir%}/${pkg}.bash.in"
   mv ${verbose:+-v} "${build_dir%}/${pkg}.bash.in" "${build_dir%}/${pkg}.bash"
 
   # Dynamically update RPM and DEB package changelogs.
@@ -123,9 +123,9 @@ main () {
   declare -g pkg="blip"
   eval "$("$base/gitversion.sh" -d "$base/.git" -p "$pkg" -S)"
   declare -g build_base="$base/build"
-  declare -g build_dir="$build_base/${pkg}-${VERSION}"
-  declare -g release_dir="$base/release/${pkg}-${VERSION}"
-  declare -g tarball="${pkg}-${VERSION}.tar.gz"
+  declare -g build_dir="$build_base/${pkg}-${VERSION_MAJOR}.${VERSION_MINOR}${VERSION_POINT:+$VERSION_POINT}"
+  declare -g release_dir="$base/release/${pkg}-${VERSION}${VERSION_POINT:+$VERSION_POINT}"
+  declare -g tarball="${pkg}-${VERSION_MAJOR}.${VERSION_MINOR}.tar.gz"
 
   if [[ "$(hostid)" = "007f0101" ]] && [[ "$(id -un)" = "nicolaw" ]] ; then
     # Sign with the authors key.
