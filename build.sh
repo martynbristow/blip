@@ -70,7 +70,7 @@ RPMMACROS
     --define "release $VERSION_RELEASE" \
     --define "_sourcedir $build_base" \
     --define "_rpmdir $release_dir" \
-    --define "_build_name_fmt %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm"
+    --define "_build_name_fmt %%{NAME}-%%{VERSION}-%%{RELEASE}${DIRTY_SUFFIX:+$DIRTY_SUFFIX}.%%{ARCH}.rpm"
 
   rpm -qlpi ${verbose:+-v} \
     "$release_dir/${pkg}-${VERSION}${DIRTY_SUFFIX:+$DIRTY_SUFFIX}.noarch.rpm"
