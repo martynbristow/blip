@@ -173,9 +173,9 @@ $output"
     local tag="$last"
     if [[ "$tag" == "HEAD" ]] ; then
       tag="$first"
-    fi
-    if [[ "$tag" == "HEAD" || "$tag" == "$TAG" ]] && [[ -n "$DIRTY" ]] ; then
-      local dirty_suffix="${DIRTY_SUFFIX:-}"
+      if [[ -n "${DIRTY_SUFFIX:-}" ]] ; then
+        local dirty_suffix="$DIRTY_SUFFIX"
+      fi
     fi
 
     if git_tag_bash_rematch "$tag" ; then
@@ -198,9 +198,8 @@ $output"
         if [[ "$annotation" =~ urgency=([^[:space:]]+) ]] ; then
           urgency="${BASH_REMATCH[1],,}"
         fi
-        if [[ "$last" == "HEAD" ]] ; then
+        if [[ -n "${dirty_suffix:-}" ]] ; then
           os_distribution="UNRELEASED"
-          version="$version"
         fi
 
         printf '%s (%s) %s; urgency=%s\n\n' \
@@ -249,7 +248,7 @@ main () {
   BRANCH="${BRANCH:-$(git_branch)}"
 
   if [[ -z "${NO_SOURCE:-}" ]] ; then
-    SOURCE="$(git_source)"
+    SOURCE="$(git_source)" || unset SOURCE
   fi
 
   if [[ -z "${PKG_NAME:-}" && "${SOURCE:-}" =~ /([^/]+)\.git$ ]] ; then
@@ -262,13 +261,15 @@ main () {
   COMMIT_SHA1="$(git_longid "$COMMIT")"
   COMMIT_SHA1_SHORT="$(git_shortid "$COMMIT")"
 
-  TAG="$(git_tag "$COMMIT")"
+  if ! TAG="$(git_tag "$COMMIT")" ; then
+    exit 98
+  fi
   TAG_SHA1="$(git_longid "$TAG")"
   TAG_SHA1_SHORT="$(git_shortid "$TAG")"
 
   TAG_CHANGES=$(git rev-list "$TAG..$COMMIT" --count)
   DIRTY="$(git_isdirty)" || :
-  if [[ -n "$DIRTY" ]] ; then
+  if [[ -n "$DIRTY" || ${TAG_CHANGES:-0} -gt 0 ]] ; then
     DIRTY_SUFFIX="~devbuild${TAG_CHANGES:-0}"
   fi
 
