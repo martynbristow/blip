@@ -60,6 +60,7 @@ os_name () {
 }
 
 os_distribution () {
+  local os_name="${1:-}"
   if [[ -r /etc/lsb-release ]] ; then
     eval "$(egrep "^DISTRIB_ID=.*" "/etc/lsb-release")"
   fi
@@ -74,9 +75,13 @@ os_distribution () {
   elif [[ -e /etc/debian-release ]] ; then
     echo "Debian"
   fi
+  if [[ "$os_name" == "Darwin" ]] ; then
+    sw_vers -productName
+  fi
 }
 
 os_codename () {
+  local os_name="${1:-}"
   if [[ -r /etc/lsb-release ]] ; then
     eval "$(egrep "^DISTRIB_CODENAME=.*" "/etc/lsb-release")"
   fi
@@ -86,11 +91,14 @@ os_codename () {
 }
 
 os_version () {
+  local os_name="${1:-}"
   if [[ -r /etc/lsb-release ]] ; then
     eval "$(egrep "^DISTRIB_RELEASE=.*" "/etc/lsb-release")"
   fi
   if [[ -n "$DISTRIB_RELEASE" ]] ; then
     echo "$DISTRIB_RELEASE"
+  elif [[ "$os_name" == "Darwin" ]] ; then
+    sw_vers -productVersion
   else
     uname -r
   fi
@@ -113,6 +121,10 @@ git_branch () {
 git_tag () {
   local commit="${1:-$COMMIT}"
   git describe --tags --abbrev=0 --first-parent --match=v* "${commit:-HEAD}"
+}
+
+git_tag_bash_rematch () {
+  [[ "${1:-}" =~ ^v(([0-9]+)\.([0-9]+)(\.([0-9]+))?(-([0-9]+))?)$ ]]
 }
 
 git_longid () {
@@ -208,10 +220,6 @@ $output"
   fi
 }
 
-git_tag_bash_rematch () {
-  [[ "${1:-}" =~ ^v(([0-9]+)\.([0-9]+)(\.([0-9]+))?(-([0-9]+))?)$ ]]
-}
-
 main () {
   eval "$(parse_args "$@")"
   if [[ $? -gt 0 || -n "${PRINT_HELP:-}" ]] ; then
@@ -247,7 +255,6 @@ main () {
 
   TAG_CHANGES=$(changelog | wc -l)
 
-  #if [[ "$TAG" =~ ^v(([0-9]+)\.([0-9]+)(\.([0-9]+))?(-([0-9]+))?)$ ]] ; then
   if git_tag_bash_rematch "$TAG" ; then
     VERSION="${BASH_REMATCH[1]}"
     VERSION_MAJOR="${BASH_REMATCH[2]}"
@@ -256,11 +263,12 @@ main () {
     VERSION_RELEASE="${BASH_REMATCH[7]}"
   fi
 
+  # TODO(nicolaw): What about arch etc? This feels flakey.
   if [[ -z "${OS_DISTRIBUTION:-}" && -z "${OS_NAME:-}" && -z "${OS_VERSION:-}" ]] ; then
     OS_NAME="$(os_name)"
-    OS_DISTRIBUTION="$(os_distribution)"
-    OS_CODENAME="$(os_codename)"
-    OS_VERSION="$(os_version)"
+    OS_DISTRIBUTION="$(os_distribution "${OS_NAME:-}")"
+    OS_CODENAME="$(os_codename "${OS_NAME:-}")"
+    OS_VERSION="$(os_version "${OS_NAME:-}")"
   fi
   if [[ -n "${OS_NAME:-}" && -z "${OS_DISTRIBUTION:-}" ]] ; then
     OS_DISTRIBUTION="$OS_NAME"
@@ -269,6 +277,7 @@ main () {
 
   if [[ -n "${LOG:-}" ]] ; then
     changelog "$LOG"
+
   else
     for v in GIT_DIR GIT_TOPLEVEL PKG_NAME DIRTY SOURCE BRANCH \
       COMMIT COMMIT_SHA1 COMMIT_SHA1_SHORT \
