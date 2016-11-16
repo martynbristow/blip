@@ -6,7 +6,7 @@ test_070_license () {
             "MIT License"
             "Copyright (c) 2016 Nicola Worthington"
             )
-    for file in blip.bash LICENSE debian/copyright build.sh Makefile
+    for file in blip.bash LICENSE debian/copyright Makefile
     do
         for string in "${strings[@]}"
         do

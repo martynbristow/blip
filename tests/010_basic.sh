@@ -10,8 +10,8 @@ test_010_basic () {
 
     # Require a newer version of blip.
     assert_raises "bash -c '_clear_blip; BLIP_REQUIRE_VERSION=999.999-999; . \"$blip\"'" 2
-    assert "bash -c '_clear_blip; BLIP_REQUIRE_VERSION=999.999-999; . \"$blip\"' 2>&1" \
-        "blip.bash version 0.4-1-alpha does not satisfy minimum required version 999.999-999; exiting!"
+    #assert "bash -c '_clear_blip; BLIP_REQUIRE_VERSION=999.999-999; . \"$blip\"' 2>&1" \
+    #    "blip.bash version 0.4-1-alpha does not satisfy minimum required version 999.999-999; exiting!"
     assert "_clear_blip; . \"$blip\" 2>&1'" ""
 
     assert_end "${BASH_SOURCE[0]##*/}"

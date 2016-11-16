@@ -77,11 +77,11 @@ if [ "x$BASH" = "x" ] || [ "x$BASH_VERSION" = "x" ] || [ "x$BASHPID" = "x" ] ; t
 fi
 
 if [[ -z "${BLIP_VERSION:+defined}" ]] ; then
-  declare -rxga BLIP_VERSINFO=("%VERSION_MAJOR%" "%VERSION_MINOR%" "%VERSION_RELEASE%" "%VERSION_TAG%")
+  declare -rxga BLIP_VERSINFO=("@VERSION_MAJOR@" "@VERSION_MINOR@" "@VERSION_RELEASE@" "@VERSION_TAG@")
   declare -rxg BLIP_VERSION="${BLIP_VERSINFO[0]}.${BLIP_VERSINFO[1]}.${BLIP_VERSINFO[2]}-${BLIP_VERSINFO[3]}"
 else
   echo "blip.bash version $BLIP_VERSION is already loaded." >&2
-  if ! [[ "$BLIP_VERSION" = "%VERSION_MAJOR%.%VERSION_MINOR%.%VERSION_RELEASE%-%VERSION_TAG%" ]] ; then
+  if ! [[ "$BLIP_VERSION" = "@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_RELEASE@-@VERSION_TAG@" ]] ; then
     echo "Reloading conflicting versions of blip.bash over each" \
         "other may result in unpredictable behaviour!" >&2
   fi

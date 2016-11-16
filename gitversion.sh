@@ -19,6 +19,8 @@ parse_args () {
     case "$key" in
       -d|--git-dir)   printf 'GIT_DIR="%s"\n' "${2:-.git}"; shift ;;
       -p|--pkg-name)  printf 'PKG_NAME="%s"\n' "${2:-}"; shift ;;
+      -k|--key)       printf 'PRINT_KEY="%s"\n' "${2:-}"; shift ;;
+      -S|--no-source) printf 'NO_SOURCE="1"\n' ;;
       -b|--branch)    printf 'BRANCH="%s"\n' "${2:-master}"; shift ;;
       -c|--commit)    printf 'COMMIT="%s"\n' "${2:-HEAD}"; shift ;;
       -t|--tag)       printf 'TAG="%s"\n' "${2:-}"; shift ;;
@@ -26,7 +28,6 @@ parse_args () {
       -O|--os-name)   printf 'OS_NAME="%s"\n' "${2:-}"; shift ;;
       -D|--os-dist)   printf 'OS_DISTRIBUTION="%s"\n' "${2:-}"; shift ;;
       -V|--os-ver)    printf 'OS_VERSION="%s"\n' "${2:-}"; shift ;;
-      -S|--no-source) printf 'NO_SOURCE="1"\n' ;;
       -v|--version)   printf 'PRINT_VERSION="!"\n' ;;
       -h|--help)      printf 'PRINT_HELP="1"\n' ;;
     esac
@@ -43,6 +44,8 @@ print_usage () {
 Syntax: ${0#*/} [options]
   -d, --git-dir=DIR    Specify .git repository (defaults to .git)
   -p, --pkg-name=NAME  Specify the package name (derive from repo path/origin)
+  -k, --key=KEY        Only print output value of specific KEY
+  -S, --no-source      Do not attempt to discover upstream source
   -b, --branch=BRANCH  Specify branch (defaults to master)
   -c, --commit=ID      Specify last git commit-ish like ID to work up to
   -t, --tag=TAG        Specify git tag to work from
@@ -50,7 +53,6 @@ Syntax: ${0#*/} [options]
   -O, --os-name=NAME   Overload OS detection, explicitly providing OS_NAME
   -D, --os-dist=DIST   Overload OS detection, explicitly providing OS_DISTRIB
   -V, --os-ver=VERSION Overload OS detection, explicitly providing OS_VERSION
-  -S, --no-source      Do not attempt to discover upstream source
   -h, --help           Display this help message
 EOM
 }
@@ -171,6 +173,7 @@ $output"
     local tag="$last"
     if [[ "$tag" == "HEAD" ]] ; then
       tag="$first"
+      local dirty_suffix="${TAG_CHANGES:-0}"
     fi
 
     git_tag_bash_rematch "$tag" || :
@@ -195,17 +198,22 @@ $output"
         fi
 
         printf '%s (%s) %s; urgency=%s\n\n' \
-          "$PKG_NAME" "$version" "$os_distribution" "$urgency"
+          "$PKG_NAME" "$version${dirty_suffix:+-$dirty_suffix}" "$os_distribution" "$urgency"
         git log --format="format:  * %s" "${first:+$first..}${last}" | cat
         git log -1 \
-          --format="format:%n%n --  %aN <%aE>  %aD" \
+          --format="format:%n%n -- %aN <%aE>  %aD" \
           "${last}" | cat
         ;;
 
       redhat|rhel|centos|fedora|rpm)
         git log -1 \
-          --format="format:* %aD %aN $VERSION${OS_PKG_SUFFIX:+.$OS_PKG_SUFFIX}%n" \
-          "${last}" | cat
+          --format="format:* @%ad@ %aN <%aE> - $VERSION${dirty_suffix:+-$dirty_suffix}%n" \
+          --date=raw \
+          "${last}" \
+            | perl -MPOSIX=strftime -pe \
+            's/^\* @([0-9]+) [\+-]?[0-9]{4}@ /* @{[strftime("%a %b %d %Y",localtime($1))]} /'
+          # Custom date formats are not supported in Git 1.x :-(
+          #--date=format:"%a %b %d %Y" \
         git log \
           --format="format:- %s" \
           "${first:+$first..}${last}" | cat
@@ -275,7 +283,10 @@ main () {
   fi
   OS_PKG_SUFFIX="$(os_pkg_suffix "${OS_DISTRIBUTION:-}" "${OS_VERSION:-}")"
 
-  if [[ -n "${LOG:-}" ]] ; then
+  if [[ -n "${PRINT_KEY:-}" ]] ; then
+    echo "${!PRINT_KEY:-}"
+
+  elif [[ -n "${LOG:-}" ]] ; then
     changelog "$LOG"
 
   else
