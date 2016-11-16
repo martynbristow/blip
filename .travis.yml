@@ -1,6 +1,6 @@
 ---
 language: bash
-script: make test
+script: build.sh
 dist: trusty
 os: linux
 addons:
